@@ -101,6 +101,41 @@ const SPIN_MAX_MS = 5200
 /** Whole turns added to the target so the spin reads as a spin, not a jump. */
 const SPIN_TURNS = 4
 
+/**
+ * Every length the draw pass needs, derived from the canvas' CSS size.
+ *
+ * Returns null when the size cannot produce a usable wheel. That is not
+ * hypothetical: on the first frame the canvas is still detached, its rect is
+ * 0x0, and the previous code floored that to 1px. A 1px wheel has a negative
+ * outer radius (0.5 - 0.06 - 6 = -5.56) and every arc call then throws
+ * IndexSizeError, which used to freeze the whole page on its loading screen.
+ *
+ * A null return is the honest answer: "this size cannot be drawn" is a state,
+ * whereas clamping the size up to something drawable would draw a wheel nobody
+ * asked for at a size the layout has not produced yet.
+ */
+export interface WheelGeometry {
+  readonly outer: number
+  readonly rimWidth: number
+  readonly rOuter: number
+  readonly rInner: number
+  readonly labelR: number
+}
+
+export function wheelGeometry(size: number): WheelGeometry | null {
+  if (!Number.isFinite(size) || size <= 0) return null
+  const outer = size / 2
+  const rimWidth = Math.max(6, size * 0.045)
+  const markerRoom = size * 0.06
+  const rOuter = outer - markerRoom - rimWidth
+  // The rim is a minimum of 6px so it stays visible on a small wheel, which
+  // means a small enough wheel has no room left for pockets at all. Reporting
+  // that as unusable is better than handing a negative radius to the 2D API.
+  if (rOuter <= 0) return null
+  const rInner = rOuter * 0.4
+  return { outer, rimWidth, rOuter, rInner, labelR: (rInner + rOuter) / 2 }
+}
+
 export interface WheelRenderer {
   readonly wheel: Wheel
   /** Start a spin that comes to rest with the given pocket under the pointer. */
@@ -140,18 +175,10 @@ export function createWheelRenderer(
     typeof globalThis.matchMedia === 'function' &&
     globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  function geometry(size: number) {
-    const outer = size / 2
-    const rimWidth = Math.max(6, size * 0.045)
-    const markerRoom = size * 0.06
-    const rOuter = outer - markerRoom - rimWidth
-    const rInner = rOuter * 0.4
-    return { outer, rimWidth, rOuter, rInner, labelR: (rInner + rOuter) / 2 }
-  }
-
   function draw(): void {
-    if (cssSize === 0) return
-    const { outer, rimWidth, rOuter, rInner, labelR } = geometry(cssSize)
+    const wheel = wheelGeometry(cssSize)
+    if (wheel === null) return
+    const { outer, rimWidth, rOuter, rInner, labelR } = wheel
     const count = current.pockets.length
     const sweep = sweepFor(count)
     const fontSize = Math.max(9, Math.round(rOuter * 0.085))
@@ -243,7 +270,14 @@ export function createWheelRenderer(
 
   function measure(): void {
     const rect = canvas.getBoundingClientRect()
-    const next = Math.max(1, Math.round(Math.min(rect.width, rect.height) || cssSize))
+    const raw = Math.min(rect.width, rect.height)
+    // A detached or not-yet-laid-out canvas reports 0x0. That is "not measured
+    // yet", not "one pixel wide". The old `Math.max(1, ...)` conflated the two
+    // and drew a 1px wheel, whose outer radius is negative, which threw on
+    // every arc call. Leaving cssSize at 0 keeps draw() idle until the layout
+    // gives the canvas a real size; the ResizeObserver brings us back.
+    if (!Number.isFinite(raw) || raw < 1) return
+    const next = Math.round(raw)
     if (next === cssSize) return
     cssSize = next
     const scale = dpr()

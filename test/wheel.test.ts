@@ -6,6 +6,7 @@ import {
   normalize,
   pocketAtPointer,
   pocketLabel,
+  wheelGeometry,
   rotationLandingOn,
   sweepFor,
 } from '../src/ui/wheel';
@@ -174,6 +175,47 @@ describe('labelRotation', () => {
     expect(Math.abs(afterOneTurn - upright + TAU)).toBeCloseTo(0, 12);
   });
 });
+
+describe('wheelGeometry refuses to describe a wheel it cannot draw', () => {
+  // Regression: the live page threw IndexSizeError "The radius provided (-5.56)
+  // is negative" and froze on its loading screen. A detached canvas measures
+  // 0x0, the old code floored that to 1px, and a 1px wheel has an outer radius
+  // of 0.5 - 0.06 - 6. The assertion below pins the exact arithmetic so the
+  // clamp cannot come back unnoticed.
+  it('reports a 1px wheel as unusable, which is what -5.56 was', () => {
+    expect(wheelGeometry(1)).toBeNull()
+    const outer = 1 / 2
+    const radius = outer - 1 * 0.06 - Math.max(6, 1 * 0.045)
+    expect(radius).toBeCloseTo(-5.56, 2)
+  })
+
+  it('refuses a zero, negative or non-finite size', () => {
+    expect(wheelGeometry(0)).toBeNull()
+    expect(wheelGeometry(-40)).toBeNull()
+    expect(wheelGeometry(Number.NaN)).toBeNull()
+    expect(wheelGeometry(Number.POSITIVE_INFINITY)).toBeNull()
+  })
+
+  it('finds the smallest size that still has room for pockets', () => {
+    // size/2 - size*0.06 - 6 > 0  =>  size > 13.636...
+    expect(wheelGeometry(13)).toBeNull()
+    expect(wheelGeometry(14)).not.toBeNull()
+  })
+
+  it('describes every real phone width', () => {
+    for (const size of [320, 360, 390, 430, 768, 1280]) {
+      const wheel = wheelGeometry(size)
+      expect(wheel).not.toBeNull()
+      if (wheel === null) return
+      expect(wheel.rInner).toBeGreaterThan(0)
+      expect(wheel.rOuter).toBeGreaterThan(wheel.rInner)
+      expect(wheel.outer).toBeCloseTo(size / 2, 6)
+      // The label sits between the hub and the rim, or the digits fall off.
+      expect(wheel.labelR).toBeGreaterThan(wheel.rInner)
+      expect(wheel.labelR).toBeLessThan(wheel.rOuter)
+    }
+  })
+})
 
 describe('the geometry the renderer actually composes', () => {
   it('sweeps wedges across the full turn so no gap opens between pockets', () => {
