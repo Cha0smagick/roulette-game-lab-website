@@ -1,0 +1,244 @@
+/* Game shell, reels and controls. Mobile-first: the base layout targets a
+   320px phone and only widens from there. */
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 100dvh;
+  padding: 1rem 0.9rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.game__brand {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--amber);
+  margin: 0;
+  text-align: center;
+}
+
+.game__tagline {
+  margin: -0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Reels. aspect-ratio keeps the box proportional across phone widths without a
+   resize observer, and prevents layout shift when the canvas backing store is
+   resized at dpr. */
+.reels {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  max-height: 46dvh;
+  border-radius: 14px;
+  background: var(--navy-light);
+  /* Canvas is decorative-duplicate of the message text, so it must not be a
+     tap target or a focus stop. */
+  touch-action: manipulation;
+}
+
+/* Stat row: 2x2 on the narrowest phones, 4 across once there is room. */
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.5rem 0.3rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.stat__label {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stat--energy .stat__value {
+  color: var(--amber);
+}
+
+.stat--jackpot .stat__value {
+  color: var(--cyan);
+}
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.break-countdown {
+  width: 100%;
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  /* Always rendered, never conditionally removed: an announced break reads as
+     part of the game, an unannounced one reads as an intrusion. */
+}
+
+.message {
+  width: 100%;
+  min-height: 1.4rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--white);
+}
+
+.bet-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.bet-row .stat__label {
+  margin-right: 0.2rem;
+}
+
+.bet {
+  width: 44px;
+  height: 44px;
+  /* 44px is the minimum comfortable thumb target; smaller and players miss,
+     and a missed tap on a bet button feels like a dropped input. */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bet--active {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--navy);
+}
+
+.spin {
+  width: 100%;
+  min-height: 58px;
+  border: none;
+  border-radius: 14px;
+  background: var(--amber);
+  color: var(--navy);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.spin:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* Pressed state must be visible: on a phone the finger covers the button, so
+   without this there is no confirmation the tap registered. */
+.spin:active:not(:disabled),
+.bet:active {
+  transform: translateY(1px);
+  filter: brightness(0.92);
+}
+
+.paytable {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.paytable__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.paytable__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.paytable__row {
+  display: grid;
+  grid-template-columns: 4.2rem 3rem 1fr;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+}
+
+.paytable__symbol {
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paytable__pay {
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.paytable__odds {
+  color: var(--muted);
+}
+
+/* Wider screens: four stats in a row and a roomier reel box. */
+@media (min-width: 420px) {
+  .stat {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .stat__value {
+    font-size: 1.15rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .game {
+    gap: 1rem;
+    padding-top: 1.6rem;
+  }
+
+  .reels {
+    max-height: 52dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The reels themselves still move; that is the game. This only removes the
+     colour-shifting transitions, which are pure decoration. */
+  .spin,
+  .bet {
+    transition: none;
+  }
+}
