@@ -77,7 +77,8 @@ describe('the panel answers the question a session can answer and refuses the on
     fit.render(historyOf(pockets))
 
     const cards = wrapped(fit.element).findAllByClass('fit__card')
-    expect(cards).toHaveLength(2)
+    // Parity, per-number, transition matrix: the panel runs three tests.
+    expect(cards).toHaveLength(3)
 
     // The parity split is the only outcome set whose smallest expected count
     // clears the reliability floor inside the hundred spins a session keeps, so
@@ -165,5 +166,78 @@ describe('the deviation list is a shortlist, not a ranking', () => {
     const printed = texts(figures ?? []).map(Number)
     expect(printed[0]).toBe(top?.count)
     expect(printed[1]).toBeCloseTo(top?.expected ?? 0, 2)
+  })
+})
+
+describe('the transition matrix is the third chi-square test', () => {
+  it('renders the colour matrix beside the independence prediction', async () => {
+    const fit = await panel()
+    // A repeating red, black, green pattern keeps all three states present, so
+    // the renormalised green share is 1/37 and the green-to-green cells sit far
+    // below the reliability floor no matter how the spins are distributed.
+    fit.render(historyOf(Array.from({ length: 100 }, (_, i) => [32, 20, 0][i % 3] ?? 32)))
+
+    const cards = wrapped(fit.element).findAllByClass('fit__card')
+    expect(cards).toHaveLength(3)
+
+    const matrix = cards[2]
+    // The card is named for the test it runs, not for the classification it
+    // happens to use — asserting the dataset key is what proves the title comes
+    // from the dictionary rather than a string typed in the component.
+    expect(matrix?.findAllByClass('fit__card-title')[0]?.dataset['i18n']).toBe('stats.transitionsTest')
+
+    // The green-to-green cell is almost never seen, so the panel is required to
+    // refuse rather than to omit the test and let the absence read as a result.
+    expect(matrix?.findAllByClass('fit__verdict')[0]?.className).toContain('fit__verdict--refused')
+  })
+
+  it('refuses when only one colour ever appeared', async () => {
+    const fit = await panel()
+    // Every spin the same colour: the chain has one state, there is nothing to
+    // compare, and a refusal is the honest answer.
+    fit.render(historyOf(Array.from({ length: 30 }, () => 32)))
+
+    const cards = wrapped(fit.element).findAllByClass('fit__card')
+    expect(cards).toHaveLength(3)
+    expect(cards[2]?.findAllByClass('fit__verdict')[0]?.className).toContain('fit__verdict--refused')
+
+    // No strongest cell exists when only one state was seen: the row prints
+    // nothing rather than a cell the engine never produced.
+    const labels = cards[2]?.findAllByClass('fit__label') ?? []
+    const values = cards[2]?.findAllByClass('fit__value') ?? []
+    const index = labels.findIndex((label) => label.dataset['i18n'] === 'stats.strongestCell')
+    expect(index).toBeGreaterThan(-1)
+    expect(values[index]?.textContent).toBe('')
+  })
+
+  it('shows the strongest cell with the observed count beside the expectation', async () => {
+    const { classifyByColour, transitionMatrix } = await import('../src/stats/markov.js')
+    const pockets = seededSpins(100, 'markov-panel')
+    const fit = await panel()
+    fit.render(historyOf(pockets))
+
+    // Derived from the engine's own result rather than a number typed here, so
+    // the assertion survives a change of seed or wheel. The history entries are
+    // passed exactly as the panel passes them, newest first.
+    const strongest = transitionMatrix(historyOf(pockets).entries, EUROPEAN, classifyByColour).strongest
+    expect(strongest).not.toBeNull()
+
+    const labels = wrapped(fit.element).findAllByClass('fit__label')
+    const values = wrapped(fit.element).findAllByClass('fit__value')
+    const index = labels.findIndex((label) => label.dataset['i18n'] === 'stats.strongestCell')
+    expect(index).toBeGreaterThan(-1)
+    // The transition reads in chronological order with the observed count
+    // beside the expected one — §9.0 requires both to be readable side by side.
+    expect(values[index]?.textContent).toContain(String(strongest?.observed))
+    expect(values[index]?.textContent).toContain('/')
+  })
+
+  it('declares the transition keys in both locales', async () => {
+    const { readFileSync } = await import('node:fs')
+    for (const locale of ['en', 'es'] as const) {
+      const source = readFileSync(new URL(`../src/i18n/locales/${locale}.ts`, import.meta.url), 'utf8')
+      expect(source).toContain("'stats.transitionsTest'")
+      expect(source).toContain("'stats.strongestCell'")
+    }
   })
 })

@@ -1,12 +1,15 @@
 /**
  * The goodness-of-fit panel.
  *
- * Two chi-square tests and a deviation list, and the pairing is the whole
+ * Three chi-square tests and a deviation list, and the pairing is the whole
  * point. The parity split is the only outcome set a human session can actually
  * answer: with a hundred recorded spins its smallest expected count is fifty.
  * The per-number test is the one everybody wants, and at that sample size it is
  * not merely noisy but unanswerable, so it is shown here REFUSING rather than
- * quietly omitted. A refusal a reader can see is the honest version of a tool
+ * quietly omitted. The transition matrix over colour refuses for the same
+ * reason: a green-to-green cell is almost never seen, so its expected counts
+ * sit far below the reliability floor at any sample size a session keeps.
+ * A refusal a reader can see is the honest version of a tool
  * that reports nothing and lets the absence pass for a clean result.
  *
  * Every figure printed here appears beside the figure a fair wheel predicts.
@@ -24,6 +27,8 @@ import {
   verdict,
 } from '../stats/hypothesis.js'
 import type { BinObservation, ChiSquareTest, Verdict } from '../stats/hypothesis.js'
+import { classifyByColour, transitionMatrix } from '../stats/markov.js'
+import type { MarkovCell, MarkovResult } from '../stats/markov.js'
 
 /**
  * How many numbers the deviation list shows. Five is enough to look like a
@@ -104,6 +109,26 @@ function pValueText(p: number): string {
 }
 
 /**
+ * A state of the chain mapped onto the labels the outcome rows already use. A
+ * state this module does not name prints its raw label rather than being
+ * silently mistranslated.
+ */
+function stateLabel(state: string): string {
+  const key = BIN_LABEL[state]
+  return key === undefined ? state : t(key)
+}
+
+/**
+ * "red → black 5 / 23.4" — the transition with the largest excess: the state
+ * that came first, the state that followed, the observed count beside the count
+ * independence predicts, in chronological order.
+ */
+function strongestText(cell: MarkovCell | null): string {
+  if (cell === null) return ''
+  return `${stateLabel(cell.from)} → ${stateLabel(cell.to)} ${formatNumber(cell.observed)} / ${formatNumber(cell.expected)}` // i18n-exempt: dictionary labels, an arrow and figures
+}
+
+/**
  * The sign is spelled out rather than left to a space in a proportional
  * figure: a column of z-scores where the positive ones are unmarked reads as a
  * column of magnitudes.
@@ -156,6 +181,52 @@ function card(titleKey: TranslationKey, test: ChiSquareTest): HTMLElement {
   // spins to answer" invites the reader to guess how few.
   line.textContent = result.level === 'refused'
     ? `${label} ${t('stats.moreNeeded', { count: formatNumber(result.shortfall) })}` // i18n-exempt: composed from two dictionary strings
+    : label
+
+  box.append(heading, list, line)
+  return box
+}
+
+/**
+ * The transition matrix as the third chi-square test, built over colour — the
+ * classification every roulette tracker ships first, and the one with the most
+ * cells per state at a human sample size. Its smallest expected cell is a
+ * green-to-green transition, which is almost never seen, so at any sample size
+ * a session keeps the test refuses — and it is shown refusing rather than
+ * quietly omitted, for the same reason the per-number test is.
+ */
+function transitionCard(result: MarkovResult): HTMLElement {
+  const box = document.createElement('section')
+  box.className = 'fit__card'
+
+  const heading = document.createElement('h3')
+  heading.className = 'fit__card-title'
+  heading.dataset['i18n'] = 'stats.transitionsTest'
+
+  const list = document.createElement('dl')
+  list.className = 'fit__rows'
+
+  const rows: ReadonlyArray<readonly [TranslationKey, string]> = [
+    ['stats.spinstested', formatNumber(result.transitions)],
+    ['stats.statistic', formatNumber(result.chi2)],
+    ['stats.degrees', formatNumber(result.degreesOfFreedom)],
+    ['stats.pValue', pValueText(result.pValue)],
+    ['stats.minExpected', formatNumber(result.minExpected)],
+    ['stats.strongestCell', strongestText(result.strongest)],
+  ]
+  for (const [labelKey, value] of rows) {
+    const pair = row(labelKey)
+    pair.value.textContent = value // i18n-exempt: figures and their labels come from the dictionary above
+    list.append(pair.term, pair.value)
+  }
+
+  const line = document.createElement('p')
+  line.className = `fit__verdict fit__verdict--${result.verdict.level}`
+  const label = t(VERDICT_KEY[result.verdict.level])
+  // The refusal is printed with the number of spins it needs, because "too few
+  // spins to answer" invites the reader to guess how few.
+  line.textContent = result.verdict.level === 'refused'
+    ? `${label} ${t('stats.moreNeeded', { count: formatNumber(result.verdict.shortfall) })}` // i18n-exempt: composed from two dictionary strings
     : label
 
   box.append(heading, list, line)
@@ -250,6 +321,7 @@ export function createHypothesisPanel(): HypothesisPanel {
     body.replaceChildren(
       card('stats.parityTest', chiSquareAgainst(history.entries, EUROPEAN, parityBins())),
       card('stats.numbersTested', chiSquareAgainst(history.entries, EUROPEAN, pocketBins(EUROPEAN))),
+      transitionCard(transitionMatrix(history.entries, EUROPEAN, classifyByColour)),
       deviationList(history),
     )
   }
