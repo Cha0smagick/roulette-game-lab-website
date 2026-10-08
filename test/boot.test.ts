@@ -83,7 +83,7 @@ describe('the table page entry', () => {
     await loadEntry()
 
     const slots = dom.app.findAllByClass('adslot')
-    const byPlacement = new Map(slots.map((slot) => [slot.dataset['adslot-placement'], slot]))
+    const byPlacement = new Map(slots.map((slot) => [slot.dataset.adslotPlacement, slot]))
 
     expect(slots).toHaveLength(2)
     expect(byPlacement.get('footer')?.dataset['adslot']).toBe('live')

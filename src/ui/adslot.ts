@@ -70,7 +70,7 @@ export function createAdSlot(options: AdSlotOptions): AdSlot {
   element.className = 'adslot'
   element.setAttribute('aria-label', t('ad.label'))
   element.dataset['adslot'] = 'waiting'
-  element.dataset['adslot-placement'] = options.placement
+  element.dataset.adslotPlacement = options.placement
   element.append(frame)
 
   // One-way by design. Removing and re-adding the unit to follow the gate
@@ -96,7 +96,7 @@ export function createAdSlot(options: AdSlotOptions): AdSlot {
     const unit = createAadsUnit()
     frame.append(unit.frame)
     element.dataset['adslot'] = 'live'
-    element.dataset['adslot-src'] = unit.src
+    element.dataset.adslotSrc = unit.src
     inserted = true
   }
 

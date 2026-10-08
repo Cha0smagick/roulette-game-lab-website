@@ -272,8 +272,8 @@ describe('the idle gate decides when the unit is allowed to exist', () => {
     live.sync()
 
     expect(waiting.element.className).toBe(live.element.className)
-    expect(waiting.element.dataset['adslot-placement']).toBe(
-      live.element.dataset['adslot-placement'],
+  expect(waiting.element.dataset.adslotPlacement).toBe(
+    live.element.dataset.adslotPlacement,
     )
   })
 })
