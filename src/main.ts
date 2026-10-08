@@ -156,6 +156,13 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
       startAutoplay()
     }
   })
+  // Reload is the natural reset, but a button keeps it one tap, and it ends any
+  // autoplay loop first: a reset that left the interval running would
+  // immediately re-place the settled bets the player just cleared.
+  const resetButton = buildButton('table.reset', 'controls__small', () => {
+    stopAutoplay()
+    dispatch({ type: 'reset' })
+  })
   const seedRow = document.createElement('div')
   seedRow.className = 'hud__seed'
   const seedLabel = document.createElement('span')
@@ -175,7 +182,7 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   controls.append(chips.element, spinButton)
   const small = document.createElement('div')
   small.className = 'controls__row'
-  small.append(clearButton, undoButton, rebetButton, autoplayButton)
+  small.append(clearButton, undoButton, rebetButton, autoplayButton, resetButton)
   controls.append(small)
 
   section.append(board.element, controls, stats, result, seedRow)

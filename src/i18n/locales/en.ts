@@ -33,6 +33,7 @@ export const en = {
   'table.rebet': 'Rebet',
   'table.autoplay': 'Auto',
   'table.autoplayStop': 'Stop',
+  'table.reset': 'Reset',
   'table.balance': 'Balance',
   'table.wager': 'Total wager',
   'table.payout': 'Payout',

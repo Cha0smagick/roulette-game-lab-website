@@ -45,3 +45,19 @@ describe('the autoplay decision', () => {
     }
   })
 })
+
+describe('the reset control', () => {
+  it('ends autoplay before it dispatches the reset', () => {
+    const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8')
+    expect(source).toContain(
+      "buildButton('table.reset', 'controls__small', () => {\n    stopAutoplay()\n    dispatch({ type: 'reset' })\n  })",
+    )
+  })
+
+  it('is named in both locales', () => {
+    for (const name of ['en', 'es']) {
+      const file = locale(name)
+      expect(file).toContain("'table.reset'")
+    }
+  })
+})
