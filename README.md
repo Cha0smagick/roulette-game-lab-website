@@ -1,287 +1,197 @@
-# Slot Machine — the ad break IS the game
+# REELAZO
 
-> A mobile-web slot machine where advertising is not the monetization layer.
-> It is the resource. You cannot spin without it.
+A roulette analysis engine for the browser. Three pages, no backend, no accounts,
+no money — and no predictions, because a wheel is a physical random process and
+nothing predicts one.
 
----
-
-## 1. What this actually is
-
-Not "a casino game that shows ads." **A slot machine whose only fuel is ad views.**
-
-The reels are not bought with money. They are not bought with a daily gift. They are
-powered by *ads the player watches*. Every spin consumes ad energy. When you run dry,
-you must sit through a commercial break to play again.
-
-That inverts the usual free-to-play structure:
-
-| | Typical ad-supported game | This one |
-|---|---|---|
-| Ads | tax on the player, shown at convenience | **the cost of playing** |
-| Player goal | avoid ads | **get enough ad time to spin** |
-| Ad metric | impressions you tolerate | **watch time you need** |
-| Retention serves | the ads | the ads — directly, in the loop |
-
-The commercial break is not an interruption. It is the pump.
+The engine exists to do the one thing most gambling sites are built not to do:
+state the arithmetic plainly and let you check it. Every house edge on this site
+is **derived by enumerating the pockets of a wheel**, not copied from a table
+someone else wrote. Every strategy verdict on this site comes from **running the
+strategy**, not from an opinion about it.
 
 ---
 
-## 2. THE RULE — non-negotiable, this is what kills the account
+## The three pages
 
-**Never reward the player for clicking an ad.**
-
-Not once, not partially, not "just the first click."
-
-Why, mechanically:
-
-- AdSense and AdMob classify *incentivized clicking* as invalid traffic. The rule is
-  written into both ad placement policies and invalid traffic policies.
-- Their fraud systems correlate **ad click events against app state changes**. A click
-  that immediately increments a counter is a labelled pattern. It does not take a
-  sophisticated attacker to trip it.
-- Penalty is not a warning. It is account suspension and **withholding of money already
-  earned**. Your revenue goes to zero and does not come back.
-
-So the mechanic is:
-
-- Player **watches** an ad, completion callback fires, energy granted.
-- Player **clicks** the ad: nothing happens. No reward, no counter, no sound, no feedback.
-
-The distinction is invisible to the player (they cannot tell there *should* have been a
-reward) and fatal to the account if you get it wrong. This is the single highest-risk
-line in the whole project.
-
-### Also out — these get you banned or sued
-
-- Fake ad players, hidden iframe impressions, traffic bought from click farms.
-- Incentivizing *any* outbound click, including "open to claim your prize."
-- Cloaking, rotating ad unit IDs, or hiding ads from the network's own scanner.
-- Rewarding artificial watch time (rewarding *more* the longer the player stares at
-  nothing is fabrication; a flat reward on completion is fine).
+| Page | What it does |
+| --- | --- |
+| **Live table** (`index.html`) | A playable European wheel. Bet on straight-ups, splits, streets, corners, six-lines, dozens, columns and the even-money outside bets. Every spin is reproducible from the seed printed on screen. |
+| **Simulator** (`simulator.html`) | Runs several betting systems side by side over hundreds of thousands of spins and charts what actually happened: equity curves, final bankroll, expected value per spin, return on investment, maximum drawdown, and whether the bankroll was ruined and on which spin. Runs in a Web Worker, so the page stays responsive. |
+| **Encyclopedia** (`encyclopedia.html`) | The arithmetic, written out: the three wheels, the fourteen bets, where the house edge comes from, what progression systems do and do not change, and why streaks do not mean what people think they mean. Its tables are generated from the same engine that runs the table, so they cannot drift out of date. |
 
 ---
 
-## 3. Stack reality — read this before designing features
+## The house edge, derived
 
-You want GitHub Pages. GitHub Pages is static web. On static web:
+The European wheel has 37 pockets: 18 red, 18 black, and one green zero. Betting
+red wins on 18 of them and loses on 19, so the edge is **1/37 = 2.70 %**. The
+American wheel's two green pockets make it 18 against 20, so **1/38 = 5.26 %**.
+A 36-pocket wheel with no zero has 18 against 18, so the edge is **exactly zero**.
 
-| Ad format | Available? | Consequence |
-|---|---|---|
-| Display banner (AdSense) | yes | low eCPM, low engagement, no completion event |
-| Video overlay (outstream / in-article) | yes | full view is player-controlled, **no reliable completion callback** |
-| Rewarded video | **NO** | mobile app SDK only |
-| Rewarded interactive | **NO** | mobile app SDK only |
-| Playable ad (IAB standard) | **NO** | mobile app SDK only |
-| Native ad | partially | manual reporting, low eCPM |
+That last case is the interesting one. It is also the proof that this engine is
+not simply rigged against the player: the same code that charges 5.26 % on the
+American wheel charges nothing at all on the fair one. Both are asserted to
+twelve decimal places in the test suite, and so is the theorem that *every* bet
+on a wheel shares that wheel's edge — a straight-up, a split, a corner, a column
+and a bet on red all lose at exactly the same rate.
 
-**So the literal version of the idea — where a playable ad unit *is* the micro-game
-you play to unlock the reel spin — cannot be built on GitHub Pages.** It requires a
-native app shell (Capacitor/TWA + AdMob or AppLovin).
-
-This project builds the version that works on the platform chosen. If the playable unit
-becomes the goal, the platform decision has to change first.
-
----
-
-## 4. The loop
-
-```
-   ┌──────────────────────────────────────────────┐
-   │                                              │
-   ▼                                              │
- energy? ──no──► COMMERCIAL BREAK (telegraphed)  │
-   │                │                             │
-   │                ▼                             │
-   │        video plays to completion             │
-   │                │                             │
-   │                ▼                             │
-   │          energy += E                         │
-   │                │                             │
-   ▼                │                             │
- SPIN ──────────────┘                             │
-   │                                              │
-   ▼                                              │
- reels resolve → paytable outcome → visual rhythm │
-   │                                              │
-   ▼                                              │
- payout / near-miss / bonus round                │
-   │                                              │
-   └──────────────────────────────────────────────┘
-```
-
-Design rules for the break:
-
-- **Telegraphed, never sprung.** A visible counter and a clear "next break in N spins."
-  Surprising the player with an ad is the fastest way to lose them. It also risks
-  accidental clicks, which is the *other* thing AdSense forbids.
-- **Fixed cadence, fixed length.** Not every spin. Every 4–6 spins, plus at session end.
-  Variable timing trains the player to hunt for the trigger and force it early.
-- **No ad during resolution.** Never during a spin animation, a bonus round, or any
-  moment the player needs to act. That produces accidental clicks.
-- **Skip is not offered.** Skippable video reduces completion rate, which lowers eCPM,
-  which lowers revenue. The break is the product.
+Run eight betting systems for 300 000 spins each on the unfair wheel and every
+one of them loses. Run them on the fair wheel and the average is
+indistinguishable from zero. Both directions are asserted, because either one
+on its own would be consistent with an engine that is merely broken.
 
 ---
 
-## 5. The casino layer, applied to this
+## What this project will not do
 
-The casino surface is real and gets built properly. What it is *powered by* is the
-change.
+These are not aspirations. They are rules, and several of them are enforced by
+tests that fail the build if a change breaks them.
 
-| Casino element | Implementation |
-|---|---|
-| Reels / spin | 3-reel, weighted paytable, published in-app |
-| Bet size | 1–3 energy units per spin (risk selector) |
-| Near-miss | visual rhythm only — never implies odds that do not exist |
-| Streak | visible progress bar, breaks when it breaks |
-| Bonus round | triggered by reel outcome, awards energy multiplier |
-| Jackpot | progressive, seeded from a fixed house budget, visibly bounded |
-| Wild / scatter | standard mechanics, fixed probabilities |
-| Autoplay | exists, and it exists *because* autoplay = more spins = more impressions |
+- **No real money.** No deposits, no withdrawals, no wallets, no crypto, no
+  cash-out, no "test your luck". The bankroll is 1 000 units that the site
+  invented and that nobody can withdraw.
+- **No compulsion mechanics.** No mechanic whose design purpose is to make
+  someone unable to stop. No fake timers, no fake scarcity, no near-misses
+  dressed up as wins, no manipulation of streaks.
+- **No dishonest odds.** Every payout is published on the page, the house edge
+  is computed from the pockets rather than asserted, and no bet pays less than
+  the page says it pays.
+- **No ad click that does anything.** See below.
+- **No tracking of a player's state or habits.** No analytics, no fingerprinting,
+  no personal data collected. The seed of your session stays in your browser.
 
-Autoplay is the growth engine and it is worth saying so plainly: the design goal for
-retention and the design goal for ad inventory are the same number. A player on a long
-autoplay streak is simultaneously earning impressions and staying in the game. That
-alignment is the entire business.
-
----
-
-## 6. Why this earns
-
-Rewarded-video eCPM on mobile sits far above display-banner eCPM — typically an order of
-magnitude — because advertisers pay for *completed attention*, not for a pixel. The web
-formats are weaker per impression but the loop multiplies impressions:
-
-- Slot session = 40–120 spins.
-- 1 commercial break per 4–6 spins → **10–25 ad views per session**.
-- Autoplay sessions push toward 300+ ad views per day for a heavy user.
-
-Two honest caveats:
-
-- **On web you are on display/outstream eCPM, not rewarded eCPM.** The loop compensates
-  with volume, not per-view price.
-- **Raw ad volume is not the goal.** Aggressive breaks reduce session length and
-  retention, which reduces *total* impressions. Overstuffed breaks make more money per
-  user per minute and less money per user per month. Cadence tuning is the whole game.
+A pull request that adds any of the above will be declined. The reasoning is in
+`.github/pull_request_template.md`.
 
 ---
 
-## 7. What this project does not include
+## The ad rule
 
-Non-negotiable, stated up front so it is never a surprise later:
+The site carries one passive display unit from **aads.com**, in a reserved slot
+below the game. The unit is an iframe the site does not control and cannot read.
 
-- No deposits, withdrawals, wallets, balances, or any real-money mechanism.
-- No cryptocurrency, no on-chain anything, no wallet connection.
-- No "test your luck," no deposit bonus, no cash-out, no near-cash-out language.
-- No odds engineered to maximize player loss. The paytable is real and visible.
-- No mechanic whose design purpose is making a player unable to stop.
-- No streak-loss protection disguised as generosity, no fake scarcity, no fake timers,
-  no dark patterns, no countdown that is not actually counting down.
-- No tracking of a player's mental state, habits, or wellbeing.
+**No code path exists in which an ad interaction grants, increments or animates
+anything.** This is not a preference — rewarding a click is *incentivized
+traffic*, the pattern every ad network's fraud systems are built to detect, and
+the penalty is suspension plus withholding of money already earned. Since ad
+revenue is the only revenue here, one such line of code would end the project.
 
-Any pull request adding any of the above will be rejected. This is not negotiable and
-does not need a discussion in review.
+That rule is enforced structurally in `test/ads.test.ts`, which fails the build
+if any module under `src/ads` grows click handling, if any module under
+`src/game` or `src/roulette` imports anything from `src/ads`, or if anything
+re-introduces an ad lifecycle the game could await. A test that fails is a real
+boundary; a comment is not. The full analysis is in
+[`docs/ad-provider-audit.md`](docs/ad-provider-audit.md).
 
----
-
-## 8. Tech
-
-| Layer | Choice | Why |
-|---|---|---|
-| Language | TypeScript, `strict: true` | catch state bugs at compile time |
-| Build | Vite | fast, tiny output, zero config |
-| Framework | **none** | a mobile web game on GitHub Pages is judged on first-load time; every kB of framework is abandonment, and abandonment is lost impressions |
-| Reels | Canvas 2D | full control over animation timing, no DOM thrash |
-| Layout / depth | CSS 3D transforms | cheap, GPU-composited |
-| Audio | Web Audio API, synthesized | zero asset weight, zero licensing |
-| State | typed store + reducer | single source of truth, replayable |
-| Persistence | `localStorage` | no backend, no account, no PII |
-| Ads | Google AdSense | only workable web option |
-| Deploy | GitHub Actions → `gh-pages` | one push, done |
-
-Budget: **under 120 kB gzipped total**, including the game. Revisit that budget every
-time something is added.
+**The unit does not currently earn anything.** It has to be approved for this
+domain by aads.com first, and that approval has not landed. Until it does, the
+slot renders empty and `AADS_ENABLED` in `src/ads/aads.ts` is the switch.
 
 ---
 
-## 9. Structure
+## Stack
 
-```
-index.html
-src/
-  main.ts              bootstrap
-  game/
-    state.ts           typed state, reducer
-    energy.ts          ad-energy accounting
-    spin.ts            spin resolution + weighting
-    paytable.ts        the published table
-    progression.ts     streaks, bonus, jackpot
-  ui/
-    reel.ts            canvas reel renderer
-    hud.ts             energy, credits, progress
-    break.ts           commercial-break sequence
-    overlays.ts        menus, paytable, settings
-  ads/
-    provider.ts        ad network adapter (one interface, one impl)
-    cadence.ts         break scheduling + telegraphing
-  audio/
-    sfx.ts             synthesized sound
-  util/
-    storage.ts         safe localStorage
-    rng.ts             seeded PRNG
-docs/
-  ad-policy.md         network rules this project must not break
-  metrics.md           what gets measured and why
+No framework. That is a deliberate trade: a framework would roughly double the
+bundle, and bundle size is the one number that decides whether someone on a
+phone finishes loading or leaves.
+
+- **TypeScript, strict**, with `noUncheckedIndexedAccess`,
+  `exactOptionalPropertyTypes`, `verbatimModuleSyntax` and `noImplicitReturns`
+- **Vite**, three HTML entries, no client router — the browser's own navigation,
+  reload, bookmark and back button work
+- **Canvas 2D** for the wheel and the charts; no charting dependency
+- **Web Worker** for batch simulation
+- **Typed i18n**: the English dictionary is the source of truth and the
+  `TranslationKey` type is derived from its shape, so a missing translation is a
+  compile error. Adding German is one dictionary file and one registry entry.
+- **CSS custom properties** as the design token layer, with a test that reads
+  them back out of `base.css` and compares them against the canvas renderer's
+  palette. That test exists because the wheel was once drawing a brass rim from
+  a slightly different gold than the spin button used, and nothing in CSS and
+  canvas shares a channel that would have noticed.
+- **GitHub Actions** to GitHub Pages
+
+## Running it
+
+```sh
+npm ci
+npm run dev       # http://localhost:5173
+npm run verify    # typecheck + tests + build. Must be green before every commit.
+npm run size      # gzipped bundle budget
 ```
 
----
+The site is three static files deep and needs nothing else. No backend, no
+database, no environment variables.
 
-## 10. What gets measured
+### Deploying
 
-Priority order. Retention first, always.
+Pushing to `main` builds and publishes automatically. One thing has to be true
+in the repository settings first, and it is easy to miss because the workflow
+will fail in a way that does not name the cause:
 
-1. **D1 / D7 retention** — does anyone come back
-2. **sessions per user per day**
-3. **average session length (spins)**
-4. **ad views per session** (cadence tuning knob)
-5. **fill rate and eCPM** (ad revenue reality)
+**Settings → Pages → Build and deployment → Source must be set to
+"GitHub Actions".** If it is set to a branch, the workflow runs, passes, and then
+cannot publish, because the two mechanisms write to different places.
 
-If (4) and (5) are high but (1) is low, the game is bad and the numbers are hiding it.
-High impressions from unhappy players is not a business, it is a churn curve.
+## Size budget
 
----
+`npm run size` gzips every file in `dist/` and fails over **120 kB total**. The
+site currently sits at about **34 kB**, so there is roughly four times headroom.
+The budget measures the whole output — all three pages, every chunk, the worker —
+because what a visitor downloads is the sum, and a budget that only looked at one
+entry point would let a 90 kB script walk past it unnoticed.
 
-## 11. Roadmap
+## Accessibility and mobile notes
 
-| Phase | Deliverable |
-|---|---|
-| F0 | Vite + TS strict scaffold, GitHub Actions deploy to `gh-pages` |
-| F1 | Canvas reels, weighted spin, published paytable, seeded RNG |
-| F2 | Energy economy + cadence scheduler + break sequence + ad provider |
-| F3 | Audio, progression, bonus rounds, autoplay |
-| F4 | Mobile-first layout, safe areas, haptics, performance pass |
-| F5 | Metrics instrumentation |
-| F6 | PWA / offline / installable |
+- Every control is a real `<button>`, at least 44 px, reachable by keyboard
+- The current page is marked twice: with colour, and with `aria-current` — which
+  is the one a screen reader actually reads
+- The result of a spin is announced through a polite live region
+- `prefers-reduced-motion` removes the wheel spin entirely; the same number is
+  still drawn, and the table state is identical
+- No page pins zoom. Pinning it breaks WCAG 1.4.4 and a test asserts it is absent
+- Safe-area insets on all four edges, and `100dvh` rather than `100vh` so mobile
+  Safari does not cut the footer off
 
----
+## Tests
 
-## 12. Open decisions
+Roughly two hundred, and a good number of them exist because they caught
+something. Notable ones:
 
-| # | Question | Blocks |
-|---|---|---|
-| 1 | AdSense only, or is a native app acceptable? | F2 — determines whether playable ads are ever in scope |
-| 2 | Brand name | F4 |
-| 3 | Break cadence target: how many ad views per session is the goal? | F2 tuning |
-| 4 | Single-player only, or leaderboards? | F5 — leaderboards imply backend and accounts |
+- House edge derived and asserted to twelve decimal places, per wheel, per bet
+- The double-zero modelled correctly (it shares the value `0` and is distinguished
+  by position, which is why iterating the pockets meets `0` twice)
+- Settle arithmetic shared between the live table and the simulator, so they
+  cannot disagree about what a bet pays
+- Every planned bet from every strategy is legal and covers at least one pocket
+- The no-system-beats-the-zero theorem, in both directions described above
+- Design system: tokens exist, canvas matches tokens, no stylesheet hardcodes a
+  colour the tokens own, no viewport meta pins zoom, no layout declares a fixed
+  width over 320 px
+- Ad boundary: no click-shaped API, no import of the ad module from game code
+- A copy guard that fails the build on hardcoded user-visible strings, so copy
+  cannot silently ship in one language
 
----
+## Status and honest gaps
 
-## License
-
-MIT.
+- **Visual QA has not been done.** Nothing here has been opened in a real
+  browser at any viewport. The responsive work so far is a static audit of the
+  CSS and HTML — viewport meta, fixed widths, safe areas, touch targets — which
+  is a real check of a real class of bug and is not the same as looking at it.
+- **The ad unit is not approved for this domain yet**, so ad revenue is zero.
+- The encyclopedia covers the arithmetic, not the folklore. There is no history
+  of the game, no biographies, no casino-culture writing.
 
 ## Contributing
 
-Contributions welcome. Pull requests that add real-money mechanics, cryptocurrency,
-incentivized ad clicking, or compulsion-by-design mechanics are rejected on sight and
-the discussion will not be reopened.
+Read [`PLAN.md`](PLAN.md) first — it is the phase ledger and the reasoning
+behind the architecture, including the places where what was built differs from
+what was planned and why.
+
+Every rule in the ground-rules section of that plan is checked by something
+automated. If your change needs a test to be taken seriously, write the test.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

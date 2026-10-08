@@ -289,22 +289,57 @@ adding one is a data change, not a code change — and every string goes
 through `t()`.
 
 ### F12 — design system + responsive
-Multi-page shell (header, nav, footer) shared by all three pages. Casino
-visual language: deep navy `#0B1026`, brass `#C9A227`, felt green `#0E5C3F`,
-bone `#F5F2E8`. Serif display face for headings, tabular figures for all
-numbers, gold used only for emphasis and the active state — never as a fill.
-- Verified at 320 / 360 / 390 / 430 / 768 / 1280 px.
-- No horizontal scroll at any width. The number grid must fit 320 px without
-  shrinking a hit target below 44 px.
-- `env(safe-area-inset-*)` respected on notched devices.
-- Long tasks fragmented; no layout thrash on spin.
-- `prefers-reduced-motion` honoured globally.
+As built: `:root` in `base.css` became a real token layer (surfaces, accent, ink,
+interaction, betting-only colours, brass steps, type scale, spacing,
+`--touch-target: 44px`, `--measure`), and every hex literal in the four
+page/board stylesheets was replaced with a `var()` reference. The canvas
+renderer's palette is now `export`ed and a test reads the custom properties out of
+`base.css` and compares them against it — because the wheel was drawing a brass
+rim from `#c9a227` while the spin button painted its gradient from `--amber:
+#ffb03a`, two golds that never matched on screen, and CSS and canvas share no
+channel that would have noticed.
+
+`test/design-system.test.ts` (16 tests) enforces: the tokens exist; canvas
+matches the tokens; no stylesheet other than `base.css` contains a hex literal;
+every page carries the correct viewport meta in the correct order; no page pins
+zoom; no layout declares a fixed or minimum width above 320 px; all four
+safe-area insets are present; `100dvh` is used and `100vh` is not; every
+stylesheet that declares `transition` also declares `prefers-reduced-motion`; and
+a stylesheet using `white-space` also declares `overflow-x`.
+
+**Deviation from the plan, stated plainly:** the plan claimed verification *at*
+320 / 360 / 390 / 430 / 768 / 1280 px. What actually happened is a **static audit
+of the CSS and HTML** against those viewports — real checks of a real class of
+bug, but not the same as rendering the pages. Nothing in this project has yet been
+opened in a real browser. That gap is listed in the README rather than papered
+over.
 
 ### F13 — CI, deploy, README
-`.github/workflows/deploy.yml` — `npm ci` → `verify` → size-budget gate →
-deploy `dist/` to `gh-pages`. npm cache. A concurrency group so two pushes
-cannot race a deploy. `.github/ISSUE_TEMPLATE/`. README rewritten for
-roulette, aads.com, English, and the architecture as built.
+`.github/workflows/deploy.yml` — four gates in this order, and the order is the
+point: `npm ci` → `npm run verify` → the size budget → publish. The size budget is
+`scripts/size-budget.mjs`, a script rather than an inline CI step so that
+`npm run size` and the CI gate are literally the same check, runnable locally
+before a push instead of only telling you that you were wrong in public. It
+gzips every file in `dist/` — all three pages, every chunk and the worker —
+because what a visitor downloads is the sum, and a budget that only looked at one
+entry point would let a 90 kB script walk past it unnoticed. Fails over 120 kB;
+the site currently sits at about 34 kB. `concurrency: pages` with
+`cancel-in-progress: false`, so two pushes a minute apart cannot publish out of
+order and leave the live site on the older commit.
+
+`.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml` — the feature
+template's four required checkboxes are the project's non-mergeable rules, put
+where a contributor will actually read them. `.github/pull_request_template.md`
+states the same four things with the reasoning.
+
+One operational caveat that the workflow cannot fix by itself: **Settings →
+Pages → Source must be set to "GitHub Actions"**. Left on a branch, the workflow
+runs green and then cannot publish, and the failure does not name the cause. It
+is documented in the README.
+
+`README.md` rewritten for roulette, aads.com, English, and the architecture as
+built — including the honest gaps (no visual QA, ad unit not yet approved for the
+domain, no history-of-the-game writing).
 
 ---
 
@@ -338,11 +373,18 @@ It gets its own commit and its own tests before anything renders.
 
 - Runs on a 320 px phone in a browser, three pages, zero console errors.
 - `npm run verify` green; size budget holds.
-- House edge proven to 4 dp on every variant; straight-up pays exactly 35:1.
+- House edge proven to 12 dp on every variant; straight-up pays exactly 35:1.
 - Switch to Spanish, then German: only a dictionary file is added.
-- One push deploys it.
+- One push deploys it, once Pages is set to build from GitHub Actions.
 - **No line of code anywhere grants, increments, or animates anything in
   response to an ad interaction.**
+
+The first bullet of this list is **not yet met**, and the reason is worth more
+than the bullet: `npm run verify` cannot tell you that a page renders. Nothing in
+this project has been opened in a real browser at any viewport. The CSS and HTML
+have been audited statically (viewport meta, fixed widths, safe areas, touch
+targets, zoom pinning), which is a real check of a real class of bug and is not
+the same as looking at the thing.
 
 ---
 
@@ -354,6 +396,13 @@ It gets its own commit and its own tests before anything renders.
 2. **Target ad views per session** — cosmetic now that ads are not fuel.
 3. **Whether the encyclopedia should ever include the public-domain texts**
    (download, not email).
+4. **Visual QA.** Open all three pages in a real browser at 320 / 360 / 390 /
+   430 / 768 / 1280 px, check the console is clean, and confirm the wheel lands
+   on the number the reducer settled. Until that happens the responsive work is a
+   static audit and the first bullet of the definition of done is unmet.
+5. **GitHub Pages source must be set to "GitHub Actions"** in the repository
+   settings before the first deploy can publish. The workflow will not fail on
+   this; it will pass and then silently not publish.
 
 ---
 
