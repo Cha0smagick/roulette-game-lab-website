@@ -1,0 +1,62 @@
+/**
+ * Advertisement slot.
+ *
+ * `min-height` on both the slot and the frame is a deliberate reservation, not
+ * padding for looks. The unit loads after the page is interactive and its
+ * intrinsic height is not known until the network answers, so without a
+ * reservation the footer jumps — and on a single-column mobile layout a jump
+ * below the fold moves content the player is reading.
+ *
+ * The published aads.com snippet wraps its iframe in a div with
+ * `z-index: 99998`, i.e. it explicitly asks to float above the publisher's
+ * page. That is harmless in an article and unacceptable over a betting board,
+ * so `.adslot__frame` establishes its own stacking context pinned at zero and
+ * applies `contain: paint`. `contain: paint` gives the iframe no box to paint
+ * outside of, which is stronger than any z-index value we could win with: an ad
+ * served from a domain we do not control cannot raise itself over the table no
+ * matter what z-index it sets on its own elements.
+ */
+
+.adslot {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  margin-inline: auto;
+  padding-block: 8px;
+  contain: layout style;
+}
+
+.adslot__frame {
+  position: relative;
+  z-index: 0;
+  contain: paint;
+  overflow: clip;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 90px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 2%);
+}
+
+.adslot__frame > iframe {
+  display: block;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 728px;
+  margin-inline: auto;
+}
+
+/* Nothing is mounted while the unit is unapproved. Keeping the frame styled
+   rather than hiding it means the reservation is identical in both states, so
+   enabling the unit later cannot move a single pixel. */
+.adslot[data-adslot='empty'] .adslot__frame {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .adslot__frame {
+    transition: background-color 200ms ease;
+  }
+}

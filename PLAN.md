@@ -193,10 +193,15 @@ pure reducer: balance, chips placed, clear, undo, rebet, result).
 - The adaptive unit is mounted **only after the table is interactive**. An ad
   that shifts layout while the player is mid-bet is a layout-thrash bug and a
   misclick source.
-- Because the ads no longer fuel anything, `cadence.ts` loses its purpose.
-  The scheduler is deleted; `provider.ts` is retained as the boundary that
-  guarantees a click can never reach game state. The invariant survives even
-  though the fuel mechanic does not.
+- Because the ads no longer fuel anything, `cadence.ts` loses its purpose and
+  the scheduler is deleted. **`provider.ts` and `mock.ts` are deleted too, which
+  is a change to the plan as written.** The reasoning: a comment inside an
+  interface nothing imports is documentation, not a boundary. The incentive-to-
+  click invariant now rests on assertions in `test/ads.test.ts` — no module
+  under `src/game` or `src/roulette` may import from `src/ads`, no module under
+  `src/ads` may contain click handling in its code, and none may export a
+  `show()`/`load()` lifecycle the game could await. A test that fails is a real
+  boundary; a comment is not.
 - `docs/ad-provider-audit.md` records the findings: the embed is an iframe
   display unit, no completion event, no rewarded format on web, therefore
   energy-on-completion is not implementable and was never shipped.

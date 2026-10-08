@@ -2,6 +2,7 @@ import './styles/base.css'
 import './styles/wheel.css'
 import './styles/board.css'
 import './styles/hud.css'
+import './styles/adslot.css'
 import {
   applyTranslations,
   createLocalePicker,
@@ -15,6 +16,7 @@ import { createWheelRenderer } from './ui/wheel.js'
 import type { WheelRenderer } from './ui/wheel.js'
 import { createBoard, type Board } from './ui/board.js'
 import { createChipPicker, type ChipPicker } from './ui/chips.js'
+import { createAdSlot } from './ui/adslot.js'
 import {
   INITIAL_TABLE,
   hasBets,
@@ -62,19 +64,6 @@ function buildHeader(): HTMLElement {
 
   header.append(createLocalePicker())
   return header
-}
-
-/**
- * The advertisement slot. Reserved space, filled in F9 once the ad unit is
- * mounted. Reserving the height up front stops the layout from shifting under
- * a player who is mid-bet, which is both a jank source and a misclick source.
- */
-function buildAdSlot(): HTMLElement {
-  const slot = document.createElement('aside')
-  slot.className = 'adslot'
-  slot.setAttribute('aria-label', t('ad.label'))
-  slot.dataset['adslot'] = 'pending'
-  return slot
 }
 
 function buildFooter(): HTMLElement {
@@ -277,8 +266,15 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
 
 function mount(root: HTMLElement): void {
   const table = buildTable()
+  const slot = createAdSlot()
   root.className = 'shell'
-  root.replaceChildren(buildHeader(), table.section, buildAdSlot(), buildFooter())
+  root.replaceChildren(buildHeader(), table.section, slot.element, buildFooter())
+
+  // Mounted last, after the table is in the document and interactive. The ad is
+  // a passive third-party iframe, so there is nothing to coordinate with it, but
+  // ordering it last keeps the first interaction budget spent on the game rather
+  // than on whatever the network was doing when the page opened.
+  slot.mount()
 
   // Exposed on the root purely so the browser console can audit a landed number
   // against the printed seed instead of trusting the pixels.
