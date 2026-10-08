@@ -243,3 +243,36 @@ describe('the two board grids share one column template', () => {
     )
   })
 })
+
+describe('the footer credits the team that designed the site', () => {
+  const shell = read(join(ROOT, 'src', 'ui', 'shell.ts'))
+  const base = read(BASE_CSS)
+
+  it('renders the credit with a real hyperlink on every page', () => {
+    // The credit is built inside the shared buildFooter, so every page that
+    // calls it inherits the credit; asserting the builder covers all pages.
+    expect(shell).toMatch(/\.className = 'shell__credit'/)
+    expect(shell).toMatch(/label\.setAttribute\('data-i18n', 'footer\.credit'\)/)
+    expect(shell).toMatch(/link\.href = 'https:\/\/cha0smagicklabs\.com'/)
+    expect(shell).toMatch(/link\.target = '_blank'/)
+    expect(shell).toMatch(/link\.rel = 'noopener'/)
+  })
+
+  it('keeps the domain exempt on the same line as the literal', () => {
+    // The copy guard is a line scanner: the exemption marker must sit on the
+    // same line as the literal, exactly like the brand name does.
+    expect(shell).toMatch(
+      /link\.textContent = 'cha0smagicklabs\.com' \/\/ i18n-exempt/,
+    )
+  })
+
+  it('declares the credit in every locale', () => {
+    expect(read(join(ROOT, 'src', 'i18n', 'locales', 'en.ts'))).toMatch(/'footer\.credit':/)
+    expect(read(join(ROOT, 'src', 'i18n', 'locales', 'es.ts'))).toMatch(/'footer\.credit':/)
+  })
+
+  it('styles the credit and its link from the stylesheet tokens', () => {
+    expect(base).toMatch(/\.shell__credit\s*\{[^}]*color:\s*var\(--muted\)/)
+    expect(base).toMatch(/\.shell__credit-link\s*\{[^}]*color:\s*var\(--cyan\)/)
+  })
+})

@@ -18,6 +18,7 @@ export const en = {
   'nav.language': 'Language',
   'nav.primary': 'Primary',
   'tagline': 'Measure the wheel, do not guess it.',
+  'footer.credit': 'Designed by the team at',
 
   // ---- Headings -----------------------------------------------------------
   'h1.table': 'Roulette Table',

@@ -14,6 +14,7 @@ export const es: Record<TranslationKey, string> = {
   'nav.language': 'Idioma',
   'nav.primary': 'Principal',
   'tagline': 'Mide la rueda, no la adivines.',
+  'footer.credit': 'Diseñado por el equipo de',
 
   'h1.table': 'Mesa de ruleta',
   'h1.simulator': 'Simulador de estrategias',

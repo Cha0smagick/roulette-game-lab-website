@@ -309,3 +309,17 @@ code,
   line-height: 1.5;
   text-align: center;
 }
+
+.shell__credit {
+  margin: 0.5rem auto 0;
+  max-width: 60ch;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.shell__credit-link {
+  color: var(--cyan);
+  text-decoration: underline;
+}

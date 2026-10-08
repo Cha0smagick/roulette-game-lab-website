@@ -65,5 +65,22 @@ export function buildFooter(): HTMLElement {
   note.className = 'shell__disclaimer'
   note.setAttribute('data-i18n', 'ency.intro')
   footer.append(note)
+
+  const credit = document.createElement('p')
+  credit.className = 'shell__credit'
+  const label = document.createElement('span')
+  // The applier replaces a [data-i18n] element's textContent, so the link must
+  // be a sibling of the label rather than its child, or the language switch
+  // would erase it.
+  label.setAttribute('data-i18n', 'footer.credit')
+  credit.append(label)
+  const link = document.createElement('a')
+  link.className = 'shell__credit-link'
+  link.href = 'https://cha0smagicklabs.com'
+  link.target = '_blank'
+  link.rel = 'noopener'
+  link.textContent = 'cha0smagicklabs.com' // i18n-exempt: URL/domain, same in every language
+  credit.append(link)
+  footer.append(credit)
   return footer
 }
