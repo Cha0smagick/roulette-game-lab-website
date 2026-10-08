@@ -122,6 +122,9 @@ export const es: Record<TranslationKey, string> = {
     'Apuesta progresiva a una columna y vuelve al inicio al ganar.',
   'sim.allStrategies': 'Seleccionar todas',
   'sim.none': 'Ninguna',
+  'sim.points': 'Puntos de capital',
+  'sim.failed': 'La simulación falló: {message}',
+  'sim.mainThread': 'Ejecutando en el hilo principal. Una ejecución larga congelará la página.',
 
   'ency.intro':
     'Este motor no predice: mide. La rueda es un proceso físico aleatorio y ningún método lo vence. Lo que sigue es la aritmética, y los resultados de la simulación son esa aritmética en ejecución.',

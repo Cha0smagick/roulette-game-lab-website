@@ -207,20 +207,77 @@ pure reducer: balance, chips placed, clear, undo, rebet, result).
   energy-on-completion is not implementable and was never shipped.
 
 ### F10 — strategy engine + batch simulator
-`src/sim/strategies.ts` — eight strategies, each
-`nextBet(state) -> Bet[] | null`, pure, with table limits.
-`src/sim/engine.ts` — `run(strategy, config) -> Series` producing equity,
-drawdown, ruin flag, EV, peak. **Must not allocate per spin.**
-`src/sim/worker.ts` — Web Worker so four strategies × 1M spins never blocks the
-UI thread.
-`src/sim/charts.ts` — Canvas line charts for equity curves, bar chart for
-distribution. No charting dependency; the bundle budget forbids it.
-`src/sim/simulator.html` — strategy picker, spin count, seed, run button,
-live-updating curves, and the summary table reading EV / variance / drawdown /
-ruin probability.
-Tests: martingale doubles after a loss and clamps at the table limit; each
-strategy terminates; the simulation over a fixed seed matches a stored
-checksum; `noZero` shows EV ≈ 0 where European shows ≈ −0.027.
+`src/sim/strategies.ts` — eight strategies (flat, martingale, reverseMartingale,
+labouchere, fibonacci, dAlembert, oscarGrind, columnProgression), each a
+**`plan(run, variant) -> BetPlan` plus an `advance(run, won) -> run`** pair, both
+pure, with a table-limit clamp and no access to the RNG. Progressions are
+counted in UNITS of `minBet` and converted to a stake once, so the clamp and the
+bankroll arithmetic stay exact integer operations.
+`src/sim/engine.ts` — `runOne(request) -> RunResult` and
+`runBatch(batch) -> RunResult[]`, producing final bankroll, wagered, EV per spin,
+ROI, max drawdown, a ruin flag with the spin it happened on, and a downsampled
+equity curve. **The inner loop allocates nothing that grows with the spin
+count**: it calls `settleOne` rather than `settle`, so no bet array, settlement
+or winner array is built per spin; the sample schedule is an `Int32Array` walked
+with one pointer; and the curve is capped at `EQUITY_SAMPLE_CAP = 240` points.
+Each system gets its own seeded stream (`seed:strategyId`) so eight runs are
+independently reproducible and are not coupled to each other's draw order.
+**A system that demands more than the bankroll is declared ruined, not quietly
+reduced to an affordable bet** — that decision is the one these systems are
+supposed to fail at.
+`src/sim/protocol.ts` — the Worker wire types, in a types-only module so the page
+can import them without executing the Worker body.
+`src/sim/worker.ts` — Web Worker so eight systems × 300k spins never blocks the
+UI thread. Holds no state between messages, so a stale reply from an abandoned
+run cannot corrupt a later one.
+`src/sim/client.ts` — page-side handle, promise per run id, with a documented
+same-thread fallback when `Worker` is unavailable.
+`src/sim/charts.ts` — Canvas equity curves and a horizontal bar chart. **No
+charting dependency; the bundle budget forbids it.** Pure geometry
+(`equityScale`, `xFor`, `yFor`) is exported and tested with no canvas. All series
+share one y-range, because per-series autoscale would make a system that lost
+ninety percent look identical to one that won — the exact inversion the tool
+exists to prevent.
+`src/simulator.ts` + `simulator.html` — strategy picker, wheel, bankroll, spins,
+table limit, seed, equity points, run button, equity chart, bar chart and a
+summary table reading final bankroll / EV per spin / ROI / max drawdown / verdict.
+`vite.config.ts` gains `rollupOptions.input` for `index.html` and
+`simulator.html`, which makes this a real multipage build; `encyclopedia.html`
+is added in F11 when it exists.
+
+**Deviations from this plan as written:**
+- The strategy API is `plan` + `advance`, not `nextBet(state) -> Bet[] | null`.
+  A generator that could return `null` would need the engine to ask "what now?"
+  on every spin, and the two-function shape makes the fold-of-the-result
+  explicit and separately testable.
+- `src/roulette/settle.ts` gained `settleOne(placement, stake, outcome)` and
+  `settle` now delegates to it. This is deliberate: it keeps exactly one
+  implementation of the payout arithmetic, so the simulator cannot drift away
+  from what the live table pays, and it is what makes the allocation rule
+  above achievable.
+- The shared header and footer moved out of `main.ts` into `src/ui/shell.ts`,
+  because a nav that disagrees with itself across pages is a bug nobody can
+  reproduce. Doing this also surfaced that `.shell__header`, `.shell__nav`,
+  `.shell__link`, `.shell__footer` and `.shell__disclaimer` had **no CSS at
+  all** — the nav has been rendering unstyled since F8. Those rules now exist in
+  `base.css`, and `.shell__link--current` carries `aria-current="page"` as well
+  as the colour, because a screen reader gets nothing from the colour.
+
+Tests: every id registered with a definition and a translated label; every planned
+bet is structurally legal and covers at least one pocket on all three wheels;
+martingale doubles after a loss and clamps at the table limit; reverse martingale
+doubles after a win; labouchere crosses a pair off on a win, appends on a loss and
+restarts when the cycle completes; fibonacci steps forward and back and clamps;
+d'Alembert never drops below the base unit; Oscar Grind returns to one unit after
+a single loss; column progression advances and wraps; no system ever exceeds the
+table limit; `settleOne` and `settle` agree profit-for-profit; a run is
+deterministic for a seed; systems get independent streams; ruin reports the spin
+it happened on; the equity curve is bounded and ends on the reported final
+bankroll; a zero-spin request does not divide by zero; and **the thesis itself —
+every system is negative on a wheel with a zero, and the mean across systems on
+the zero-edge wheel sits within 0.01 of zero.** That last assertion is the one
+the page exists to support, and it is measured over 8 × 300 000 spins rather
+than restated.
 
 ### F11 — encyclopedia
 `src/content/index.ts` — data-driven article registry. `encyclopedia.html`

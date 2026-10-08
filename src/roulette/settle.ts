@@ -36,6 +36,31 @@ export interface Settlement {
   readonly winners: readonly Winner[]
 }
 
+/**
+ * One bet, one pocket, no containers.
+ *
+ * Exists because the simulator runs millions of single-bet rounds and
+ * allocating a `PlacedBet[]`, a `Settlement` and a `Winner[]` for each one
+ * would dominate its runtime. `net` is profit: a winning bet returns the stake
+ * plus the profit, so `net` is `returned - stake`, which is the profit.
+ *
+ * `settle` below delegates here, so there is exactly one implementation of the
+ * payout arithmetic in the codebase and the simulator cannot drift away from
+ * what the live table pays.
+ */
+export interface SingleResult {
+  /** Profit on this bet. Zero for a losing bet. */
+  readonly net: number
+  readonly won: boolean
+  readonly profit: number
+}
+
+export function settleOne(placement: BetPlacement, stake: number, outcome: Pocket): SingleResult {
+  if (!covers(placement, outcome)) return { net: -stake, won: false, profit: 0 }
+  const profit = stake * BETS[placement.kind].payout
+  return { net: profit, won: true, profit }
+}
+
 export function settle(bets: readonly PlacedBet[], outcome: Pocket): Settlement {
   let returned = 0
   let wagered = 0
@@ -43,11 +68,11 @@ export function settle(bets: readonly PlacedBet[], outcome: Pocket): Settlement 
 
   for (const bet of bets) {
     wagered += bet.stake
-    if (!covers(bet.placement, outcome)) continue
-    const profit = bet.stake * BETS[bet.placement.kind].payout
-    const betReturn = bet.stake + profit
+    const one = settleOne(bet.placement, bet.stake, outcome)
+    if (!one.won) continue
+    const betReturn = bet.stake + one.profit
     returned += betReturn
-    winners.push({ id: bet.id, returned: betReturn, profit })
+    winners.push({ id: bet.id, returned: betReturn, profit: one.profit })
   }
 
   return { returned, wagered, net: returned - wagered, winners }

@@ -135,6 +135,9 @@ export const en = {
     'Progressive bet on a column, reverting on a win.',
   'sim.allStrategies': 'Select all',
   'sim.none': 'None',
+  'sim.points': 'Equity points',
+  'sim.failed': 'The simulation failed: {message}',
+  'sim.mainThread': 'Running on the main thread. A long run will freeze the page.',
 
   // ---- Encyclopedia -------------------------------------------------------
   'ency.intro':

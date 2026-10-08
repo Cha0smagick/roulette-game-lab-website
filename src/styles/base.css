@@ -101,3 +101,61 @@ body {
   color: var(--muted);
   font-size: clamp(0.9rem, 3.5vw, 1.1rem);
 }
+
+/*
+ * Shared page chrome. These rules were missing while the header was built in
+ * F8, so the nav rendered as bare unstyled links. They belong here rather than
+ * in a per-page sheet because the chrome is identical on every page.
+ */
+
+.shell__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem 1rem;
+  width: 100%;
+  padding: 0.9rem 1rem 0.6rem;
+}
+
+.shell__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.shell__link {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* The current page is marked twice on purpose: colour for the eye, and
+   aria-current for a screen reader, which gets nothing from the colour. */
+.shell__link--current {
+  color: var(--white);
+  border-color: var(--amber);
+}
+
+.shell__footer {
+  width: 100%;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+}
+
+.shell__disclaimer {
+  margin: 0 auto;
+  max-width: 60ch;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}

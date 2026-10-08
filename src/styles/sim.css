@@ -1,0 +1,240 @@
+/*
+ * Strategy simulator page.
+ *
+ * Loaded only by simulator.html, so the `.shell` override below cannot leak into
+ * the live table. It exists because `.shell` in base.css centres everything on
+ * a full viewport height, which suits one centred panel and is wrong for a page
+ * that scrolls through a form, two charts and a results table. F12 consolidates
+ * this into the design system; it is scoped here until then so the two pages
+ * can coexist in one bundle layout.
+ */
+
+.shell {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
+}
+
+.sim {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 1.5rem;
+}
+
+.sim__heading {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--white);
+}
+
+.sim__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+.sim__controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.6rem;
+}
+
+.sim__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* 44px minimum on every input: the whole point of this product is a phone held
+   in one hand, and a 28px control is a control people miss. */
+.sim__input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font: inherit;
+  font-size: 1rem;
+  /* Digits must stay the same width or a bankroll ticking down looks like an
+     animation rather than a number. */
+  font-variant-numeric: tabular-nums;
+}
+
+.sim__strategies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  padding: 0.6rem 0.8rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.sim__strategies legend {
+  padding: 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sim__strategy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.sim__strategy input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--amber);
+}
+
+.sim__bulk {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sim__bulk-button {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.sim__run {
+  min-height: 58px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #d8b23c, var(--amber));
+  color: #241a05;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sim__run:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.sim__status,
+.sim__caption,
+.sim__note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.sim__caption {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sim__note[hidden] {
+  display: none;
+}
+
+.sim__chart {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1;
+  /* The chart is the reading surface, not a control, so it must not eat taps
+     meant for anything above it. */
+  touch-action: manipulation;
+}
+
+.sim__table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Six numeric columns have to survive 320px, so the type shrinks with the
+     viewport rather than the table scrolling sideways. */
+  font-size: clamp(0.62rem, 2.7vw, 0.85rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim__table th,
+.sim__table td {
+  padding: 0.45rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sim__table thead th {
+  font-size: 0.9em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sim__table tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.sim__negative {
+  color: #f87171;
+}
+
+.sim__positive {
+  color: #4ade80;
+}
+
+@media (min-width: 720px) {
+  .sim {
+    padding: 1rem 1.5rem 2rem;
+  }
+
+  .sim__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sim__run,
+  .sim__bulk-button,
+  .shell__link {
+    transition: filter 120ms ease-out, border-color 120ms ease-out;
+  }
+
+  .sim__run:active,
+  .sim__bulk-button:active,
+  .shell__link:active {
+    filter: brightness(0.92);
+  }
+}

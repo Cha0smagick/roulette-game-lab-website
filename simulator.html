@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      viewport-fit=cover is required for env(safe-area-inset-*) to be non-zero on
+      notched phones. Without it the bottom controls sit under the home indicator.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0B1026" />
+    <meta
+      name="description"
+      content="REELAZO strategy simulator - run real roulette betting systems over millions of spins and measure their true expected value, drawdown and ruin."
+    />
+    <title>REELAZO - Strategy Simulator</title>
+  </head>
+  <body>
+    <!--
+      Boot element lives in the HTML, not in JS. If the bundle fails to load the
+      player sees a styled message instead of a blank white page, which reads as
+      "broken site" and gets the tab closed.
+    -->
+    <div id="app" class="boot" role="status" aria-live="polite">
+      <p class="boot__brand">REELAZO</p>
+      <p class="boot__msg">Loading&hellip;</p>
+      <noscript>
+        <p class="boot__msg">
+          REELAZO needs JavaScript to run the simulator.
+        </p>
+      </noscript>
+    </div>
+    <script type="module" src="/src/simulator.ts"></script>
+  </body>
+</html>
