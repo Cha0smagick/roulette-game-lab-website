@@ -169,6 +169,171 @@
   line-height: 1.5;
 }
 
+/* ---- Hypothesis tests ---------------------------------------------------- */
+
+.fit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.fit__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+}
+
+/* Shown until there is a history to test, and the panel builds every element
+   once and empties the body rather than rebuilding, so a reader who has already
+   scrolled past this heading is not moved by it appearing. */
+.fit__empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.fit__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.fit__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  padding: 0.85rem 0.9rem;
+  border: 1px solid rgb(245 242 232 / 10%);
+  border-radius: var(--radius);
+  background: rgb(245 242 232 / 3%);
+}
+
+.fit__card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fit__rows {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  margin: 0;
+}
+
+.fit__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+.fit__value {
+  margin: 0;
+  color: var(--bone);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* The verdict is the line a reader is meant to take away, so it carries a
+   border as well as a colour: colour alone would fail WCAG 1.4.1, and the
+   wording of each level is what actually distinguishes them anyway. */
+.fit__verdict {
+  margin: 0;
+  padding-inline-start: 0.7rem;
+  border-inline-start: 3px solid var(--muted);
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.fit__verdict--uniform {
+  border-color: var(--muted);
+}
+
+.fit__verdict--weak {
+  border-color: var(--brass-light);
+  color: var(--bone);
+}
+
+.fit__verdict--strong {
+  border-color: var(--danger);
+  color: var(--bone);
+}
+
+/* A refusal is not a result, so it is coloured as the engine speaking rather
+   than as one of the three levels a test can come back with. */
+.fit__verdict--refused {
+  border-color: var(--cyan);
+  color: var(--ink-soft);
+}
+
+.fit__deviation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+}
+
+.fit__zlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fit__z {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 4px;
+  background: rgb(245 242 232 / 3%);
+}
+
+.fit__z-pocket {
+  min-width: 2.2ch;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brass-light);
+}
+
+.fit__z-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.85rem;
+  min-width: 0;
+}
+
+.fit__z-label {
+  margin-inline-end: 0.3rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fit__z-value {
+  color: var(--bone);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fit__caption {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .hist__cell {
     transition: background-color 150ms ease;

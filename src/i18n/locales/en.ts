@@ -255,6 +255,33 @@ export const en = {
   'stats.caption':
     'These are observations, not signals. The wheel has no memory, so none of these counts changes the odds of the next spin.',
 
+  // ---- Goodness of fit -----------------------------------------------------
+  // The labels a reader of a hypothesis test needs. Every figure they name is
+  // printed beside the figure a fair wheel predicts, which is what makes the
+  // number mean something: a p-value alone is a claim with nothing to compare
+  // it to, and this page's whole argument is the comparison.
+  'stats.fit': 'Goodness of fit',
+  'stats.parityTest': 'Odd and even',
+  'stats.numbersTested': 'Every single number',
+  'stats.spinstested': 'Spins tested',
+  'stats.statistic': 'Chi-squared',
+  'stats.degrees': 'Degrees of freedom',
+  'stats.pValue': 'p-value',
+  'stats.pValueBelow': 'below {bound}',
+  'stats.minExpected': 'Smallest expected count',
+  'stats.outcomes': 'Observed against expected',
+  'stats.verdictUniform': 'Indistinguishable from a fair wheel',
+  'stats.verdictWeak': 'Possible deviation',
+  'stats.verdictStrong': 'Clear deviation from uniform',
+  'stats.verdictRefused': 'Too few spins to answer',
+  'stats.moreNeeded': '{count} more spins needed',
+  'stats.deviation': 'Deviation by number',
+  'stats.count': 'Count',
+  'stats.expected': 'Expected',
+  'stats.zScore': 'z-score',
+  'stats.deviationCaption':
+    'A z of plus or minus two happens by chance about five times in a hundred. One large z on a hundred spins is arithmetic, not a discovery.',
+
   // ---- Shared -------------------------------------------------------------
   'ad.label': 'Advertisement',
   'common.loading': 'Loading…',

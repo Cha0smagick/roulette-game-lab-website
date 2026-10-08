@@ -5,6 +5,7 @@ import { buildFooter, buildHeader } from './ui/shell.js'
 import { createAdSlot } from './ui/adslot.js'
 import { createHistoryStrip } from './ui/history.js'
 import { createStatsPanel } from './ui/stats.js'
+import { createHypothesisPanel } from './ui/hypothesis-panel.js'
 import { loadHistory } from './ui/history-store.js'
 import { boot } from './ui/boot.js'
 
@@ -18,10 +19,12 @@ import { boot } from './ui/boot.js'
  * controls -- and putting both on one page gives both of them a compromise.
  *
  * Nothing on this page is computed from a formula about what *should* happen.
- * Every figure is a count of spins that happened. The comparison against a fair
- * wheel's expectations is deliberately not here yet, and its absence is the
- * point: a raw count with an honest caption is worth more than a rate with no
- * reference beside it.
+ * Every figure is a count of spins that happened, and every one of them is
+ * printed beside the figure a fair wheel would have produced. Where the counts
+ * are too thin to support the comparison at all, the panel says so and says how
+ * many more spins would be needed -- an honest refusal rather than a number that
+ * reads as a result. That refusal is the point as much as the answers are: a
+ * raw count with no reference beside it is a number that invites a bet.
  */
 
 function section(titleKey: Parameters<typeof t>[0], body: HTMLElement): HTMLElement {
@@ -47,6 +50,10 @@ function page(): HTMLElement {
 
   const strip = createHistoryStrip()
   const panel = createStatsPanel()
+  // The hypothesis panel is what makes the counts above mean anything, so it sits
+  // directly beneath them rather than further down: a reader who is looking for a
+  // verdict on their own spins should not have to scroll to find it.
+  const fit = createHypothesisPanel()
   const source = document.createElement('p')
   source.className = 'analysis__source'
   source.setAttribute('data-i18n', 'analysis.source')
@@ -62,6 +69,7 @@ function page(): HTMLElement {
     intro,
     section('hist.title', strip.element),
     section('stats.title', panel.element),
+    section('stats.fit', fit.element),
     inline.element,
     source,
   )
@@ -69,6 +77,7 @@ function page(): HTMLElement {
   const history = loadHistory()
   strip.render(history)
   panel.render(history)
+  fit.render(history)
   return main
 }
 
