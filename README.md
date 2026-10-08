@@ -1,8 +1,8 @@
 # REELAZO
 
-[![Deploy](https://github.com/Cha0smagick/Ads-Bet-an-ads-game/actions/workflows/deploy.yml/badge.svg)](https://cha0smagick.github.io/Ads-Bet-an-ads-game/)
+[![Deploy](https://github.com/Cha0smagick/roulette-game-lab-website/actions/workflows/deploy.yml/badge.svg)](https://cha0smagick.github.io/roulette-game-lab-website/)
 
-**Live site: <https://cha0smagick.github.io/Ads-Bet-an-ads-game/>**
+**Live site: <https://cha0smagick.github.io/roulette-game-lab-website/>**
 
 A roulette analysis engine for the browser. Three pages, no backend, no accounts,
 no money — and no predictions, because a wheel is a physical random process and
@@ -145,7 +145,7 @@ the site does not change, check that first.
 
 **The build uses a relative `base`.** `base: './'` in `vite.config.ts` means every
 asset reference is relative, which is what lets the same build work under a
-project subpath like `/Ads-Bet-an-ads-game/` with no change. A single-slash base
+project subpath like `/roulette-game-lab-website/` with no change. A single-slash base
 would have broken every route and every chunk fetch the moment the site was
 served from anything other than a domain root.
 
