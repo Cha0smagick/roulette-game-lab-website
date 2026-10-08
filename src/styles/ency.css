@@ -1,0 +1,155 @@
+/*
+ * Encyclopedia page styles.
+ *
+ * Loaded only by encyclopedia.html, which is what makes it safe to override the
+ * shared shell: a page-scoped override that leaked would be a bug on two other
+ * pages, so the rule is that nothing here is ever imported elsewhere. sim.css
+ * set the precedent.
+ */
+
+.ency {
+  width: min(100%, 62ch);
+  margin: 0 auto;
+  padding: 8px 16px 32px;
+  text-align: start;
+}
+
+.ency__heading {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  letter-spacing: 0.02em;
+  margin: 12px 0 8px;
+  color: #f5f2e8;
+}
+
+.ency__intro,
+.ency__summary {
+  color: #c8cbe0;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.ency__intro {
+  border-inline-start: 3px solid #c9a227;
+  padding-inline-start: 12px;
+  font-size: 1rem;
+}
+
+/*
+ * The contents list is the only navigation this page has, so it is styled as
+ * navigation: visible affordance, real touch targets, and the current position
+ * readable at a glance when a thumb scrolls it.
+ */
+.ency__contents ol {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.ency__contents a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid rgb(201 162 39 / 35%);
+  border-radius: 10px;
+  color: #f5f2e8;
+  text-decoration: none;
+  font-size: 0.94rem;
+}
+
+.ency__contents a:hover,
+.ency__contents a:focus-visible {
+  border-color: #c9a227;
+  background: rgb(201 162 39 / 10%);
+}
+
+/*
+ * Anchored sections get scroll margin so the heading does not hide under a
+ * browser's sticky header or behind the notch on a phone in landscape.
+ */
+.ency__article {
+  scroll-margin-top: 12px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid rgb(245 242 232 / 12%);
+}
+
+.ency__title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.2rem, 5vw, 1.5rem);
+  color: #c9a227;
+  margin: 0 0 8px;
+}
+
+.ency__article p {
+  line-height: 1.65;
+  color: #c8cbe0;
+  margin: 0 0 12px;
+}
+
+.ency__summary {
+  color: #f5f2e8;
+}
+
+/*
+ * Numbers are set in tabular figures everywhere in this project so a column of
+ * edges lines up on the decimal point rather than jittering per row.
+ */
+.ency__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 16px;
+  font-size: clamp(0.78rem, 3.2vw, 0.92rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.ency__table caption {
+  text-align: start;
+  color: #8a93b8;
+  font-size: 0.85em;
+  padding-bottom: 8px;
+}
+
+.ency__table th,
+.ency__table td {
+  border: 1px solid rgb(245 242 232 / 14%);
+  padding: 6px 8px;
+}
+
+.ency__table th {
+  background: rgb(245 242 232 / 8%);
+  color: #f5f2e8;
+  font-weight: 600;
+  text-align: start;
+}
+
+.ency__cell {
+  text-align: start;
+}
+
+.ency__number {
+  text-align: end;
+  color: #35c4d9;
+}
+
+/*
+ * Six numeric columns have to survive a 320px screen without sideways
+ * scrolling, so below the tablet breakpoint the table is allowed to be the
+ * full width of the viewport instead of the reading measure.
+ */
+@media (min-width: 48rem) {
+  .ency__table {
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ency__contents a {
+    transition:
+      border-color 140ms ease,
+      background-color 140ms ease;
+  }
+}

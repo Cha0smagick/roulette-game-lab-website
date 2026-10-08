@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1026" />
+    <meta
+      name="description"
+      content="The roulette encyclopedia: the arithmetic of the three wheels, the fourteen bets and the house edge, measured rather than predicted."
+    />
+    <title>REELAZO — Encyclopedia</title>
+  </head>
+  <body>
+    <!--
+      The boot markup lives in the HTML, not in the bundle, so a failed or slow
+      script leaves a page that says what it is instead of a blank rectangle.
+    -->
+    <div id="app" class="boot">
+      <p class="boot__brand">REELAZO</p>
+      <p class="boot__status">Loading…</p>
+      <noscript>
+        <p class="boot__status">REELAZO needs JavaScript to render the tables.</p>
+      </noscript>
+    </div>
+    <script type="module" src="/src/encyclopedia.ts"></script>
+  </body>
+</html>

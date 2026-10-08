@@ -19,8 +19,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: 'index.html',
-        simulator: 'simulator.html',
-      },
+simulator: 'simulator.html',
+    encyclopedia: 'encyclopedia.html',
+  },
     },
   },
   server: {
