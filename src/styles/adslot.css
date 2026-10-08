@@ -48,11 +48,36 @@
   margin-inline: auto;
 }
 
-/* Nothing is mounted while the unit is unapproved. Keeping the frame styled
-   rather than hiding it means the reservation is identical in both states, so
-   enabling the unit later cannot move a single pixel. */
-.adslot[data-adslot='empty'] .adslot__frame {
+/* Nothing is mounted while the unit is unapproved, and nothing is mounted while
+   an idle-gated slot is waiting for a quiet table. Keeping the frame styled
+   rather than hiding it means the reservation is identical in all three states,
+   so a unit arriving later — or never arriving — cannot move a single pixel. */
+.adslot[data-adslot='empty'] .adslot__frame,
+.adslot[data-adslot='waiting'] .adslot__frame {
   background: transparent;
+}
+
+/* Placement rules. Deliberately none of them sets a z-index: the containment
+   that stops the publisher's `z-index: 99998` from floating over the page lives
+   on the shared `.adslot__frame` above, so a placement added in future inherits
+   it by construction instead of having to remember it. */
+
+/* A unit inside the article flow reads as an aside, not as content, so it gets
+   rules above and below rather than the flush edges a footer unit wants. */
+.adslot[data-adslot-placement='inline'] {
+  margin-block: var(--gap-loose);
+  border-block: 1px solid rgb(245 242 232 / 8%);
+}
+
+/* The idle unit on the table page sits directly under the controls. The gap
+   above it is larger than the gap below so the boundary it creates reads as
+   "the game is over" rather than as part of the controls. */
+.adslot[data-adslot-placement='idle'] {
+  margin-block: var(--gap-loose) var(--gap-tight);
+}
+
+.adslot[data-adslot-placement='footer'] {
+  margin-block-start: var(--gap-loose);
 }
 
 @media (prefers-reduced-motion: no-preference) {

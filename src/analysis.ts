@@ -51,11 +51,18 @@ function page(): HTMLElement {
   source.className = 'analysis__source'
   source.setAttribute('data-i18n', 'analysis.source')
 
+  // An in-article unit sits between the observed counts and the provenance note
+  // rather than at the foot of the page. A reader who scrolls to the bottom has
+  // stopped; one halfway down a page of figures is still reading.
+  const inline = createAdSlot({ placement: 'inline' })
+  inline.sync()
+
   main.append(
     title,
     intro,
     section('hist.title', strip.element),
     section('stats.title', panel.element),
+    inline.element,
     source,
   )
 
@@ -66,13 +73,13 @@ function page(): HTMLElement {
 }
 
 function mount(root: HTMLElement): void {
-  const slot = createAdSlot()
+  const slot = createAdSlot({ placement: 'footer' })
   root.className = 'shell shell--page'
   root.replaceChildren(buildHeader('./analysis.html'), page(), slot.element, buildFooter())
   // Last, after the content is in the document. The unit is a passive
   // third-party iframe, so there is nothing to coordinate with it, but a slot
-  // that mounts first spends the first-paint budget on an ad nobody asked for.
-  slot.mount()
+  // that syncs first spends the first-paint budget on an ad nobody asked for.
+  slot.sync()
 }
 
 boot('app', (root) => {

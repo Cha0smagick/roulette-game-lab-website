@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join, relative } from 'node:path'
 
 import { AADS_ENABLED, AADS_ORIGIN, AADS_SIZES, AADS_UNIT_ID, aadsSrc } from '../src/ads/aads.js'
+import { AD_PLACEMENTS, type AdSlot, type AdSlotOptions } from '../src/ui/adslot.js'
+import { installDom, type StubElement } from './helpers/dom.js'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 
@@ -160,5 +162,178 @@ describe('the slot mounts only what it was asked to', () => {
     // slot in its own module is what allows it to be tested and to have the
     // containment guarantees above attached to it.
     expect(readRepo('src/main.ts')).not.toMatch(/function buildAdSlot/)
+  })
+})
+
+/**
+ * G9: an idle-gated unit and the placements. These are the only assertions here
+ * that need a DOM, because the gate is the one behaviour that cannot be read
+ * out of the source — a slot that looks correct in the file can still insert the
+ * unit on the first frame and put an advertisement under a thumb that is on its
+ * way to a chip.
+ */
+describe('the idle gate decides when the unit is allowed to exist', () => {
+  // Installed for its side effect: it puts `document` and `localStorage` on the
+  // globalThis, which the ad slot and the i18n module both read at import time.
+  // Nothing here inspects the returned tree, so nothing keeps a handle on it.
+  beforeEach(() => {
+    installDom()
+    vi.resetModules()
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+  })
+
+  /** Loaded dynamically: adslot.ts imports i18n, which resolves a locale at module scope. */
+  async function newSlot(options: AdSlotOptions): Promise<AdSlot> {
+    const { createAdSlot } = await import('../src/ui/adslot.js')
+    return createAdSlot(options)
+  }
+
+  function frames(slot: AdSlot): unknown[] {
+    return (slot.element as unknown as StubElement).findAllByClass('adslot__frame')
+  }
+
+  function iframes(slot: AdSlot): unknown[] {
+    return frames(slot).flatMap((frame) =>
+      (frame as unknown as StubElement).findByTag('iframe'),
+    )
+  }
+
+  it('requests nothing at all while the gate is closed', async () => {
+    const slot = await newSlot({ placement: 'idle', isIdle: () => false })
+    slot.sync()
+    slot.sync()
+
+    expect(slot.element.dataset['adslot']).toBe('waiting')
+    // Zero iframes, not one: a unit inserted then hidden is still a request the
+    // network answered, which is an impression nobody looked at.
+    expect(iframes(slot)).toHaveLength(0)
+  })
+
+  it('inserts exactly one unit the first time the gate opens', async () => {
+    let idle = false
+    const slot = await newSlot({ placement: 'idle', isIdle: () => idle })
+
+    slot.sync()
+    expect(iframes(slot)).toHaveLength(0)
+
+    idle = true
+    slot.sync()
+    expect(slot.element.dataset['adslot']).toBe('live')
+    expect(iframes(slot)).toHaveLength(1)
+  })
+
+  it('never removes a unit it has already inserted', async () => {
+    // One-way on purpose. Removing and re-adding on every busy/idle transition
+    // would re-request the ad each time, which reloads it, destroys the
+    // viewability that sets its eCPM, and manufactures impressions nobody saw.
+    let idle = true
+    const slot = await newSlot({ placement: 'idle', isIdle: () => idle })
+
+    slot.sync()
+    expect(iframes(slot)).toHaveLength(1)
+
+    idle = false
+    slot.sync()
+    slot.sync()
+
+    expect(slot.element.dataset['adslot']).toBe('live')
+    expect(iframes(slot)).toHaveLength(1)
+  })
+
+  it('waits forever when an idle unit is given no gate to consult', async () => {
+    // Fail closed. A misconfigured advertisement must never be the reason a page
+    // shows an ad under a finger, and it must never take the page down either —
+    // so it earns nothing and breaks nothing.
+    const slot = await newSlot({ placement: 'idle' })
+    slot.sync()
+
+    expect(slot.element.dataset['adslot']).toBe('waiting')
+    expect(iframes(slot)).toHaveLength(0)
+  })
+
+  it('mounts an ungated placement on the first sync', async () => {
+    // The gate is the idle placement's alone. A footer unit has nothing to wait
+    // for, and a gate it never consults would look like a bug.
+    for (const placement of ['inline', 'footer'] as const) {
+      const slot = await newSlot({ placement })
+      slot.sync()
+      expect(slot.element.dataset['adslot']).toBe('live')
+      expect(iframes(slot)).toHaveLength(1)
+    }
+  })
+
+  it('reserves the same height whether or not the unit arrives', async () => {
+    const waiting = await newSlot({ placement: 'inline' })
+    const live = await newSlot({ placement: 'inline', isIdle: () => true })
+    waiting.sync()
+    live.sync()
+
+    expect(waiting.element.className).toBe(live.element.className)
+    expect(waiting.element.dataset['adslot-placement']).toBe(
+      live.element.dataset['adslot-placement'],
+    )
+  })
+})
+
+describe('every page declares its placements', () => {
+  const ENTRIES = ['src/main.ts', 'src/analysis.ts', 'src/simulator.ts', 'src/encyclopedia.ts'] as const
+
+  it('every page passes a placement that exists', () => {
+    const known = new Set<string>(AD_PLACEMENTS)
+    const offenders: string[] = []
+
+    for (const entry of ENTRIES) {
+      const source = readRepo(entry)
+      for (const match of source.matchAll(/createAdSlot\(\{([^}]*)\}\)/g)) {
+        const placement = /placement:\s*'([^']+)'/.exec(match[1] ?? '')?.[1]
+        if (placement === undefined || !known.has(placement)) {
+          offenders.push(`${entry}: ${placement ?? '<none>'}`)
+        }
+      }
+    }
+
+    expect(offenders).toEqual([])
+  })
+
+  it('every page mounts at least one unit and one of them is the footer', () => {
+    // Derived by counting the calls rather than typed, so adding a page without
+    // a unit — or a unit without a page — fails here instead of in production.
+    for (const entry of ENTRIES) {
+      const source = readRepo(entry)
+      const calls = source.match(/createAdSlot\(\{/g) ?? []
+      expect(calls.length, entry).toBeGreaterThanOrEqual(2)
+      expect(source, entry).toMatch(/placement:\s*'footer'/)
+    }
+  })
+
+  it('the table page gates its in-game unit on the table being idle', () => {
+    const source = readRepo('src/main.ts')
+    expect(source).toMatch(/placement:\s*'idle'/)
+    // The three conditions are the promise the placement makes. Each is named
+    // here because dropping one would put an ad on screen during a spin or
+    // under a pending bet, and the suite has no browser to notice.
+    expect(source).toMatch(/isIdle:\s*\(\)\s*=>\s*spins > 0 && !wheel\.isSpinning\(\) && !hasBets\(state\)/)
+  })
+
+  it('no placement rule raises a z-index above the shared frame', () => {
+    // The containment lives on .adslot__frame so a placement added later
+    // inherits it instead of having to remember it. A placement that sets its
+    // own z-index is a placement that has been given a way to lose that.
+    const css = readRepo('src/styles/adslot.css')
+    const rules = [...css.matchAll(/\[data-adslot-placement='([^']+)'\]/g)].map((m) => m[1])
+    expect(rules.length).toBeGreaterThan(0)
+
+    for (const match of css.matchAll(/\[data-adslot-placement='[^']+'\][^{]*\{([^}]*)\}/g)) {
+      expect(match[1]).not.toMatch(/z-index/)
+    }
+  })
+
+  it('every non-live state reserves the frame', () => {
+    const css = readRepo('src/styles/adslot.css')
+    expect(css).toMatch(/\[data-adslot='empty'\]\s*\.adslot__frame/)
+    expect(css).toMatch(/\[data-adslot='waiting'\]\s*\.adslot__frame/)
   })
 })

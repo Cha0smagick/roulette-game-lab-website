@@ -183,19 +183,30 @@ function page(): HTMLElement {
 
   main.append(contents())
 
-  for (const entry of ARTICLES) main.append(article(entry))
+  // The in-article unit goes at the midpoint of the list. The index is derived
+  // from the registry rather than written as a number, because adding an article
+  // must move the break with it — a hardcoded 3 would leave it stranded above
+  // the midpoint forever and quietly stop it being a mid-article unit at all.
+  const midpoint = Math.floor(ARTICLES.length / 2)
+  const inline = createAdSlot({ placement: 'inline' })
+  inline.sync()
+
+  ARTICLES.forEach((entry, index) => {
+    main.append(article(entry))
+    if (index === midpoint) main.append(inline.element)
+  })
 
   return main
 }
 
 function mount(root: HTMLElement): void {
-  const slot = createAdSlot()
+  const slot = createAdSlot({ placement: 'footer' })
   root.className = 'shell shell--page'
   root.replaceChildren(buildHeader('./encyclopedia.html'), page(), slot.element, buildFooter())
 
-  // Last, exactly as on the other two pages: the table of contents above must be
+  // Last, exactly as on the other pages: the table of contents above must be
   // interactive before anything third-party is allowed on the page.
-  slot.mount()
+  slot.sync()
 }
 
 boot('app', (root) => {

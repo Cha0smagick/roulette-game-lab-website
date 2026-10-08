@@ -464,7 +464,7 @@ of bug and is not the same as looking at the thing.
 
 ---
 
-## 9. The Analysis Programme (G1–G8)
+## 9. The Analysis Programme (G1–G9)
 
 ### 9.0 What this programme is, and the rule that governs it
 
@@ -707,3 +707,54 @@ one thing this programme exists to provide.
 This programme does not add: predictions, a lucky-number feature, any word or symbol
 suggesting luck, any paid tier, any account, any tracking of the visitor, or any
 statistic presented without the comparison that makes it mean something.
+
+### 9.11 G9 — placements, and the one thing advertising cannot buy
+
+G9 exists because a request was made for more units in more clickable positions. It
+is worth recording what was actually possible, because the answer is narrower than
+the request and the reasons are structural rather than matters of taste.
+
+**A unit cannot be placed where a player taps, and cannot be made to respond to
+one.** The embed is a cross-origin `<iframe>` serving `//acceptable.a-ads.com`. The
+site cannot overlay it on the felt, cannot position it inside a thumb's resting arc,
+cannot read anything inside it, and cannot observe a click — the iframe owns its own
+document. Placing a unit beside the chips or the spin button therefore manufactures
+accidental clicks, and accidental clicks are invalid traffic: the enforcement is
+automated, correlating a click against a later change in application state. Revenue
+here is entirely advertising, so one strike is not a warning, it is a permanently
+zero account including money already earned. §1's rule 4 and the structural
+assertions in `test/ads.test.ts` encode exactly this, which is why the design is
+not constructible without failing the build.
+
+**What the unit actually produces is impressions, not clicks.** `size=Adaptive` in
+an iframe reports no completion and no viewability event, so there is no engagement
+the site can buy with layout. Two impressions of the same creative in the same
+session are worth less than one impression the visitor actually read, because what
+sets eCPM is viewability. So the lever that matters is **the number of views of one
+unit**, which is why an idle-gated unit is worth more than a busy one: it is seen.
+
+**Eight units across four pages, all separated from the controls:**
+
+| Page | Units | Placement | Why there |
+|---|---|---|---|
+| `index.html` | 2 | `idle` below the controls; `footer` | The idle gate is `spins > 0 && !spinning && !hasBets`. No ad on arrival, none during a spin, none while a bet is staked. |
+| `simulator.html` | 2 | `inline` between the charts and the results; `footer` | Not above the fold: an ad at the top would push the run button below the fold on a phone, and a control hidden behind an advertisement is where accidental taps come from. |
+| `analysis.html` | 2 | `inline` between the figures and the source note; `footer` | A reader who has scrolled to the bottom has stopped; one halfway down a page of figures is still reading. |
+| `encyclopedia.html` | 2 | `inline` at the midpoint of the article list; `footer` | The index is derived from `ARTICLES.length`, so adding an article moves the break with it. |
+
+**Three properties the implementation guarantees, each asserted in the suite:**
+
+1. **The gate is one-way.** Once inserted, a unit is never removed. Following the
+   gate in both directions would re-request the ad on every transition, reloading
+   it, destroying viewability and manufacturing impressions nobody saw.
+2. **The gate fails closed.** An `idle` slot given no gate to consult waits forever
+   rather than defaulting to live. A misconfigured advertisement must never put an
+   ad under a finger, and must never take the page down either — so it earns nothing
+   and breaks nothing.
+3. **The containment is on the shared frame, never on a placement.** `.adslot__frame`
+   pins `z-index: 0` and `contain: paint` once; no placement rule may set a
+   z-index, so a placement added later inherits the guarantee instead of having to
+   remember it.
+
+The rule from §9.0 applies here unchanged: an advertisement earns by being read, not
+by being tapped, and nothing in this repository may treat a click as a signal.

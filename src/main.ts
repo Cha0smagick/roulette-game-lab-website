@@ -221,7 +221,22 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
     undoButton.disabled = !canUndo
     clearButton.disabled = !canUndo
     rebetButton.disabled = state.lastBets.length === 0
+    // Every state change passes through here, so this is the one place the gate
+    // has to be consulted. It is cheap and one-way: after the unit is in the
+    // document the call does nothing at all.
+    idleSlot.sync()
   }
+
+  // The table page carries an idle-gated unit as well as the footer one. The
+  // gate is the whole point of it: no ad on arrival, none while a spin is
+  // turning, none while a bet is staked. An advertisement that appears under a
+  // finger is a misdirected tap, and a misdirected tap is how an ad account
+  // gets closed.
+  const idleSlot = createAdSlot({
+    placement: 'idle',
+    isIdle: () => spins > 0 && !wheel.isSpinning() && !hasBets(state),
+  })
+  section.append(idleSlot.element)
 
   section.dataset['spins'] = '0'
   render()
@@ -230,15 +245,15 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
 
 function mount(root: HTMLElement): void {
   const table = buildTable()
-  const slot = createAdSlot()
+  const slot = createAdSlot({ placement: 'footer' })
   root.className = 'shell'
   root.replaceChildren(buildHeader('./'), table.section, slot.element, buildFooter())
 
-  // Mounted last, after the table is in the document and interactive. The ad is
+  // Synced last, after the table is in the document and interactive. The ad is
   // a passive third-party iframe, so there is nothing to coordinate with it, but
   // ordering it last keeps the first interaction budget spent on the game rather
   // than on whatever the network was doing when the page opened.
-  slot.mount()
+  slot.sync()
 
   // Exposed on the root purely so the browser console can audit a landed number
   // against the printed seed instead of trusting the pixels.

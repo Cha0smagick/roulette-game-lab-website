@@ -227,12 +227,19 @@ function mount(root: HTMLElement): void {
   tableWrap.setAttribute('data-i18n-attr', 'aria-label:sim.results')
   tableWrap.append(table)
 
-  section.append(tableWrap, note)
+  // Between the charts and the results, not above the fold. An ad at the top of
+  // this page would push the run button below the fold on a phone, and a
+  // simulator whose primary control is hidden behind an advertisement is the
+  // placement that generates accidental taps.
+  const inline = createAdSlot({ placement: 'inline' })
+  inline.sync()
 
-  const slot = createAdSlot()
+  section.append(inline.element, tableWrap, note)
+
+  const slot = createAdSlot({ placement: 'footer' })
   root.className = 'shell'
   root.replaceChildren(buildHeader('./simulator.html'), section, slot.element, buildFooter())
-  slot.mount()
+  slot.sync()
 
   const readNumber = (input: HTMLInputElement | HTMLSelectElement, fallback: number): number => {
     const value = Number.parseInt(input.value, 10)

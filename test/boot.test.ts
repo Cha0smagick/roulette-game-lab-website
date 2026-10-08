@@ -74,12 +74,21 @@ describe('the table page entry', () => {
     expect(dom.app.findByClass('adslot')).not.toBeNull()
   })
 
-  it('leaves the ad slot empty until it is mounted, then live', async () => {
+  // The table page carries two units (G9): an idle-gated one inside the table
+  // section and a footer one. On arrival the idle one is deliberately `waiting`
+  // — no advertisement before the player has done anything — and the footer one
+  // is `live`. Both halves are asserted because asserting either alone would
+  // pass just as well if the other had been forgotten entirely.
+  it('mounts the footer unit live and holds the idle unit until the table is idle', async () => {
     await loadEntry()
 
-    const slot = dom.app.findByClass('adslot')
-    expect(slot).not.toBeNull()
-    expect(slot?.dataset['adslot']).toBe('live')
+    const slots = dom.app.findAllByClass('adslot')
+    const byPlacement = new Map(slots.map((slot) => [slot.dataset['adslot-placement'], slot]))
+
+    expect(slots).toHaveLength(2)
+    expect(byPlacement.get('footer')?.dataset['adslot']).toBe('live')
+    expect(byPlacement.get('idle')?.dataset['adslot']).toBe('waiting')
+    expect(byPlacement.get('idle')?.findAllByClass('adslot__frame')[0]?.findByTag('iframe').length).toBe(0)
   })
 
   it('disables spin until there is a bet to spin', async () => {
