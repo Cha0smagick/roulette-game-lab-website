@@ -323,3 +323,17 @@ code,
   color: var(--cyan);
   text-decoration: underline;
 }
+
+.shell__visits {
+  margin: 0.5rem auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.shell__visits-value {
+  color: var(--white);
+}

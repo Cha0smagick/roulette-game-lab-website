@@ -1,5 +1,6 @@
-import { createLocalePicker, t } from '../i18n/index.js'
+import { createLocalePicker, formatNumber, t } from '../i18n/index.js'
 import type { TranslationKey } from '../i18n/index.js'
+import { recordVisit } from '../visits/counter.js'
 
 /**
  * The chrome every page shares.
@@ -55,7 +56,7 @@ export function buildHeader(currentHref: string): HTMLElement {
   return header
 }
 
-/** The footer disclaimer, identical on every page. */
+/** The footer, identical on every page: disclaimer, credit and visit counter. */
 export function buildFooter(): HTMLElement {
   const footer = document.createElement('footer')
   footer.className = 'shell__footer'
@@ -82,5 +83,23 @@ export function buildFooter(): HTMLElement {
   link.textContent = 'cha0smagicklabs.com' // i18n-exempt: URL/domain, same in every language
   credit.append(link)
   footer.append(credit)
+
+  const visits = document.createElement('p')
+  visits.className = 'shell__visits'
+  const visitsLabel = document.createElement('span')
+  visitsLabel.setAttribute('data-i18n', 'footer.visits')
+  const visitsValue = document.createElement('span')
+  visitsValue.className = 'shell__visits-value'
+  visits.append(visitsLabel, visitsValue)
+  // The counter is the only network call the footer makes, and it degrades to
+  // nothing: a dead service hides the figure instead of printing a lie.
+  void recordVisit().then((count) => {
+    if (count === null) {
+      visits.hidden = true
+      return
+    }
+    visitsValue.textContent = formatNumber(count)
+  })
+  footer.append(visits)
   return footer
 }

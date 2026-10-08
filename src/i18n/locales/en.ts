@@ -19,6 +19,7 @@ export const en = {
   'nav.primary': 'Primary',
   'tagline': 'Measure the wheel, do not guess it.',
   'footer.credit': 'Designed by the team at',
+  'footer.visits': 'Visits',
 
   // ---- Headings -----------------------------------------------------------
   'h1.table': 'Roulette Table',
