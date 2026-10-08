@@ -1,34 +1,97 @@
-import './styles/base.css';
-import './styles/reel.css';
-import './styles/break.css';
-import { mountSession } from './game/session';
+import './styles/base.css'
+import {
+  applyTranslations,
+  createLocalePicker,
+  initI18n,
+  t,
+} from './i18n/index.js'
+import type { TranslationKey } from './i18n/index.js'
 
-/**
- * App entry.
- *
- * The boot markup lives in index.html so a failed bundle shows a styled message
- * instead of a blank page. Here we only confirm the mount point resolved, then
- * hand off to the session controller.
- */
-function mount(): void {
-  const root = document.getElementById('app');
+/** The three pages this site ships. Rendered into the shared header. */
+const PAGES = [
+  { href: './', key: 'nav.table' },
+  { href: './simulator.html', key: 'nav.simulator' },
+  { href: './encyclopedia.html', key: 'nav.encyclopedia' },
+] as const satisfies readonly { href: string; key: TranslationKey }[]
 
-  // Cannot be null given index.html, but if the id is ever removed the failure
-  // should be loud rather than a silent no-op on a blank page.
-  if (root === null) {
-    throw new Error('mount point #app not found in index.html');
+function buildHeader(): HTMLElement {
+  const header = document.createElement('header')
+  header.className = 'shell__header'
+
+  const brand = document.createElement('a')
+  brand.className = 'shell__brand'
+  brand.href = './'
+  // The exemption marker must sit on the same line as the literal; the copy
+  // guard is a line scanner and cannot see a comment on the line above.
+  brand.textContent = 'REELAZO' // i18n-exempt: proper noun, same in every language
+  header.append(brand)
+
+  const tagline = document.createElement('p')
+  tagline.className = 'shell__tagline'
+  tagline.setAttribute('data-i18n', 'tagline')
+  header.append(tagline)
+
+  const nav = document.createElement('nav')
+  nav.className = 'shell__nav'
+  nav.setAttribute('aria-label', t('nav.primary'))
+  for (const page of PAGES) {
+    const link = document.createElement('a')
+    link.className = 'shell__link'
+    link.href = page.href
+    link.setAttribute('data-i18n', page.key)
+    nav.append(link)
   }
+  header.append(nav)
 
-  root.className = 'game';
-  root.setAttribute('role', 'main');
-
-  const session = mountSession(root);
-
-  // Exposed for debugging a disputed spin from the console: type the seed in
-  // and every reel result can be replayed against the published paytable.
-  (window as unknown as { reelazo?: { seed: () => string } }).reelazo = {
-    seed: () => session.getState().seed,
-  };
+  header.append(createLocalePicker())
+  return header
 }
 
-mount();
+/**
+ * The advertisement slot. Reserved space, filled in F9 once the ad unit is
+ * mounted. Reserving the height up front stops the layout from shifting under
+ * a player who is mid-bet, which is both a jank source and a misclick source.
+ */
+function buildAdSlot(): HTMLElement {
+  const slot = document.createElement('aside')
+  slot.className = 'adslot'
+  slot.setAttribute('aria-label', t('ad.label'))
+  slot.dataset['adslot'] = 'pending'
+  return slot
+}
+
+function buildFooter(): HTMLElement {
+  const footer = document.createElement('footer')
+  footer.className = 'shell__footer'
+  const note = document.createElement('p')
+  // This sentence is the product's thesis and it is deliberately explicit:
+  // no real money, no deposits, and the published odds are the real ones.
+  note.className = 'shell__disclaimer'
+  note.setAttribute('data-i18n', 'ency.intro')
+  footer.append(note)
+  return footer
+}
+
+function mount(root: HTMLElement): void {
+  root.className = 'shell'
+  root.replaceChildren(
+    buildHeader(),
+    document.createElement('main'),
+    buildAdSlot(),
+    buildFooter(),
+  )
+}
+
+function boot(): void {
+  initI18n()
+  const root = document.getElementById('app')
+  if (root === null) {
+    // A blank page is the worst possible failure mode, so this is loud rather
+    // than silent: the boot markup in index.html would still be visible.
+    throw new Error('reelazo: #app is missing from the document')
+  }
+  mount(root)
+  applyTranslations(root)
+}
+
+boot()
