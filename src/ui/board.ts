@@ -15,9 +15,17 @@
  * the number grid stays readable underneath.
  *
  * Overlays of different kinds overlap each other, so they cannot all be live
- * at once. A layer toggle picks which one is armed; the number grid itself
- * always stays live for straight-up bets, because the numbers are what a
- * player reads to decide anything.
+ * at once. A layer toggle picks which family is armed, and it starts with NONE
+ * armed. The numbers own the board until the player explicitly asks for an
+ * overlay family.
+ *
+ * That default is not cosmetic. The overlay layer is absolutely positioned over
+ * the grid, it is the felt's later child so it always paints above the numbers,
+ * and its buttons take pointer events. An armed street family covers all twelve
+ * rows of numbers, so with streets armed by default every tap on the felt
+ * became a street bet and no number could be picked at all. Starting unarmed is
+ * what makes the numbers reachable; the "Numbers" choice in the toggle is how
+ * the player gets back to them.
  *
  * Splits get no overlay. There are 57 of them on a 3x12 grid, they would bury
  * the grid under a thicket of thin buttons, and no overlap-free rectangle
@@ -118,12 +126,38 @@ function numbersLabel(numbers: readonly Pocket[]): string {
   return numbers.slice().sort((a, b) => a - b).join(', ');
 }
 
+/**
+ * The layer toggle, in the order it is presented.
+ *
+ * 'numbers' is the absence of an armed family rather than a family of its own,
+ * so it maps to null instead of widening BetLayer, which overlayPlacements()
+ * types against. The label key is the id, which is why 'numbers' needs a
+ * dictionary entry of its own.
+ */
+const LAYER_CHOICES = [
+  { id: 'numbers', layer: null },
+  { id: 'street', layer: 'street' },
+  { id: 'corner', layer: 'corner' },
+  { id: 'line', layer: 'line' },
+] as const satisfies readonly { id: string; layer: BetLayer | null }[]
+
 export function createBoard(
   variant: VariantId,
   onPlace: (placement: BetPlacement) => void,
 ): Board {
   const root = document.createElement('div');
   root.className = 'board';
+
+  // The felt wraps the grid and the overlay layer together and nothing else, so
+  // the overlay's absolute inset covers exactly the grid it mirrors. It is built
+  // first because it owns --cols, the column template both grids read: two
+  // grids each declaring their own template drift, and a drifted overlay outline
+  // is a bet drawn next to the numbers it names instead of on them.
+  const felt = document.createElement('div');
+  felt.className = 'board__felt';
+  if (variant !== 'noZero') {
+    felt.classList.add('board__felt--with-zero');
+  }
 
   // --- layer toggle ------------------------------------------------------
   const layerRow = document.createElement('div');
@@ -138,9 +172,6 @@ export function createBoard(
   // what lets the overlay layer reuse the identical column template: an overlay
   // span expressed in the same coordinates as a number therefore lands on the
   // numbers it covers, with no second geometry to keep in sync.
-  if (variant !== 'noZero') {
-    grid.classList.add('board__grid--with-zero');
-  }
   const columnOffset = variant === 'noZero' ? 1 : 2;
 
   const numberButtons = new Map<Pocket, HTMLButtonElement>();
@@ -185,7 +216,10 @@ export function createBoard(
   // --- overlays ----------------------------------------------------------
   const overlay = document.createElement('div');
   overlay.className = 'board__overlays';
-  overlay.dataset['layer'] = 'street';
+  // Mirrored from armedLayer on every render so a test, or a person with
+  // devtools open, can read which family is armed without instrumenting the
+  // closure. Empty means none, which is the state the board opens in.
+  overlay.dataset['layer'] = '';
 
   interface Overlay {
     readonly button: HTMLButtonElement;
@@ -255,10 +289,11 @@ export function createBoard(
     outsideCells.push({ button, placement });
   }
 
-  // --- split arming ------------------------------------------------------
+  // --- split arming and the armed family ---------------------------------
   // Arm one pocket, then tap its neighbour. The armed pocket is marked on the
   // number itself so the pairing is visible, not just narrated.
   let armed: Pocket | null = null;
+  let armedLayer: BetLayer | null = null;
   let lastState: TableState | null = null;
 
   function repaint(): void {
@@ -286,27 +321,26 @@ export function createBoard(
     repaint();
   }
 
-  const layerButtons = new Map<BetLayer, HTMLButtonElement>();
-  for (const layer of ['street', 'corner', 'line'] as const) {
+  // Toggle buttons, not radios. A radiogroup promises arrow-key movement between
+  // its options and a row of plain buttons does not deliver it, so role="radio"
+  // would hand a screen-reader user a contract the board breaks. Exactly one
+  // button carries the pressed state, which is what the player sees.
+  const layerButtons = new Map<BetLayer | null, HTMLButtonElement>();
+  for (const choice of LAYER_CHOICES) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'board__layer';
-    button.setAttribute('data-i18n', `board.layer.${layer}`);
+    button.setAttribute('data-i18n', `board.layer.${choice.id}`);
     button.addEventListener('click', () => {
-      overlay.dataset['layer'] = layer;
+      armedLayer = choice.layer;
       armed = null;
       repaint();
     });
-    layerButtons.set(layer, button);
+    layerButtons.set(choice.layer, button);
     layerRow.append(button);
   }
 
-  // The felt wraps the grid and the overlay layer together and nothing else, so
-  // that the overlay's absolute inset covers exactly the grid it mirrors.
-  const felt = document.createElement('div');
-  felt.className = 'board__felt';
   felt.append(grid, overlay);
-
   root.append(layerRow, felt, outsideRow);
 
   // Declared as a function, not as a method on the returned object, so that the
@@ -328,18 +362,25 @@ export function createBoard(
       button.disabled = !canStake;
     }
 
-    const active = overlay.dataset['layer'] as BetLayer;
+    overlay.dataset['layer'] = armedLayer === null ? '' : armedLayer;
     for (const entry of overlays) {
-      const live = entry.kind === active;
-      entry.button.hidden = !live;
+      const live = entry.kind === armedLayer;
+      const staked = betOn(state, entry.placement) !== null;
+      // `hidden` removes the box entirely, so a hidden overlay cannot intercept
+      // a tap meant for the number underneath. Stacking order alone cannot
+      // deliver that: the overlay layer is the felt's later child and always
+      // paints above the grid.
+      //
+      // An overlay that holds a bet stays visible even when its family is not
+      // armed, because a chip the player cannot see is a bet they think they
+      // lost. It is not tappable (see the data-armed rule in board.css).
+      entry.button.hidden = !live && !staked;
       entry.button.disabled = !live || !canStake;
-      entry.button.classList.toggle(
-        'board__overlay--staked',
-        live && betOn(state, entry.placement) !== null,
-      );
+      entry.button.dataset['armed'] = live ? 'true' : 'false';
+      entry.button.classList.toggle('board__overlay--staked', staked);
     }
     for (const [layer, button] of layerButtons) {
-      button.setAttribute('aria-pressed', layer === active ? 'true' : 'false');
+      button.setAttribute('aria-pressed', layer === armedLayer ? 'true' : 'false');
     }
 
     for (const cell of outsideCells) {

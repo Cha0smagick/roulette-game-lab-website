@@ -72,6 +72,7 @@ export const es: Record<TranslationKey, string> = {
   'bet.cornerNumbers': 'Cuadrada {numbers}',
   'bet.lineNumbers': 'Seis números {numbers}',
   'board.layers': 'Capa de apuesta',
+  'board.layer.numbers': 'Números',
   'board.layer.street': 'Transversal',
   'board.layer.corner': 'Cuadrada',
   'board.layer.line': 'Seis números',

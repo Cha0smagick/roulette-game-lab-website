@@ -61,6 +61,15 @@
 /* ------------------------------------------------------------------ felt --- */
 
 .board__felt {
+  /*
+   * The column template is declared once, here, and both grids read it.
+   *
+   * Two grids that each declare their own template drift: the day the zero
+   * column changes width, the overlay outlines keep the old one and every
+   * street, corner and line is drawn beside the numbers it names instead of on
+   * them. A shared property removes the possibility rather than the intention.
+   */
+  --cols: repeat(3, var(--cell));
   position: relative;
   padding: 4px;
   border: 1px solid rgb(201 162 39 / 35%);
@@ -68,9 +77,21 @@
   background: linear-gradient(160deg, var(--board-felt), var(--board-felt-dark));
 }
 
+/*
+ * A zero is two numbers in one cell and the label is wider than the glyph, so
+ * the zero column is wider than one track and the layout is [zero][3 columns].
+ *
+ * The modifier sits on the felt rather than on the number grid because the felt
+ * owns --cols, and the overlay layer has to see the same four tracks as the
+ * numbers or the geometry is only half shared.
+ */
+.board__felt--with-zero {
+  --cols: minmax(28px, 1.2fr) repeat(3, var(--cell));
+}
+
 .board__grid {
   display: grid;
-  grid-template-columns: repeat(3, var(--cell));
+  grid-template-columns: var(--cols);
   grid-template-rows: repeat(12, minmax(22px, 1fr));
   gap: 2px;
 }
@@ -97,13 +118,6 @@
   background: var(--green);
 }
 
-/* A zero is 2 numbers in one cell on the no-zero-excluded tables and the
-   label is wider than the glyph, so the zero column is wider than one track
-   and the grid is laid out as [zero][3 columns]. */
-.board__grid--with-zero {
-  grid-template-columns: minmax(28px, 1.2fr) repeat(3, var(--cell));
-}
-
 .board__number--staked {
   box-shadow: inset 0 0 0 2px var(--board-brass);
 }
@@ -120,16 +134,21 @@
 /* -------------------------------------------------------------- overlays --- */
 
 /*
- * The overlay grid is a pixel-identical copy of the number grid, laid over it,
- * so a single `grid-column`/`grid-row` span expresses "this rectangle of the
- * board" for every bet kind. The buttons themselves are transparent and draw
- * their outline with a pseudo-element, which keeps the digits beneath legible.
+ * The overlay grid is laid over the number grid on the same tracks, so a single
+ * `grid-column`/`grid-row` span expresses "this rectangle of the board" for
+ * every bet kind. The buttons are transparent and draw their outline with a
+ * pseudo-element, which keeps the digits beneath legible.
+ *
+ * The template comes from --cols on the felt. It used to read `inherit`, which
+ * takes the PARENT's computed value, and the parent here is a block whose
+ * computed grid-template-columns is `none`: the overlay grid was quietly falling
+ * back to implicit auto columns, roughly 11 px off the numbers at 320 px.
  */
 .board__overlays {
   position: absolute;
   inset: 4px;
   display: grid;
-  grid-template-columns: inherit;
+  grid-template-columns: var(--cols);
   grid-template-rows: repeat(12, minmax(22px, 1fr));
   gap: 2px;
   pointer-events: none;
@@ -156,6 +175,20 @@
   display: none;
 }
 
+/*
+ * An overlay from a family that is not armed stays on the felt only while it
+ * holds a bet, so the player can still see where the money went. It must not be
+ * tappable, and it is the felt's later child, so it would otherwise sit over
+ * the numbers and swallow taps aimed at them.
+ *
+ * `hidden` removes the box entirely; this removes the hit target from the box
+ * that is deliberately left on screen. Between them the numbers stay reachable
+ * no matter which family was armed last.
+ */
+.board__overlay[data-armed='false'] {
+  pointer-events: none;
+}
+
 .board__overlay--corner::after {
   inset: 22% 22%;
 }
@@ -166,14 +199,16 @@
 
 .board__overlay--staked::after {
   border-color: var(--board-brass);
-  background: rgb(201 162 39 / 30%);
+  background: rgb(201 162 39 / 26%);
 }
 
-.board__overlay:hover::after {
+.board__overlay[data-armed='true']:hover::after {
   border-color: var(--board-brass);
 }
 
-.board__overlay:disabled {
+/* Scoped to armed overlays: an unarmed overlay carrying a bet is disabled too,
+   and dimming it would dim the record of where the player put their money. */
+.board__overlay[data-armed='true']:disabled {
   opacity: 40%;
 }
 

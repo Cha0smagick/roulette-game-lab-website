@@ -127,3 +127,101 @@ describe('the table page entry', () => {
     expect(result?.getAttribute('aria-live')).toBe('polite')
   })
 })
+
+/**
+ * A DOM stub has no layout engine and no hit testing, so a simulated click on
+ * "17" succeeds even when a real browser routes the tap to whatever paints on
+ * top of it. That is exactly how the board shipped with the numbers
+ * unreachable: the overlay layer sat over the grid with the street family armed
+ * by default, every tap staked a street instead, and the staked overlay washed
+ * brass across the whole row — which reads as "all the cells turned yellow".
+ *
+ * These tests therefore assert the structural invariant that makes the
+ * interception impossible instead of replaying the taps.
+ */
+describe('the board never covers the numbers', () => {
+  beforeEach(() => {
+    dom = installDom()
+    vi.resetModules()
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+  })
+
+  function overlays() {
+    return dom.app.findAllByClass('board__overlay')
+  }
+
+  function liveOverlays() {
+    return overlays().filter((node) => node.hidden === false)
+  }
+
+  function layerButton(id: string) {
+    return dom.app
+      .findAllByClass('board__layer')
+      .find((node) => node.getAttribute('data-i18n') === `board.layer.${id}`)
+  }
+
+  function number(label: string) {
+    return dom.app
+      .findAllByClass('board__number')
+      .find((node) => node.textContent === label)
+  }
+
+  it('opens with no overlay family armed, so a tap can only reach a number', async () => {
+    await loadEntry()
+
+    expect(liveOverlays()).toEqual([])
+    expect(dom.app.findByClass('board__overlays')?.dataset['layer']).toBe('')
+    expect(layerButton('numbers')?.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('hands the numbers back as soon as the numbers family is re-chosen', async () => {
+    await loadEntry()
+
+    layerButton('street')?.click()
+    const streets = overlays().filter((node) =>
+      node.classList.contains('board__overlay--street'),
+    )
+    // Derived rather than restated, so the count cannot drift with the geometry.
+    expect(liveOverlays()).toHaveLength(streets.length)
+    expect(dom.app.findByClass('board__overlays')?.dataset['layer']).toBe('street')
+
+    layerButton('numbers')?.click()
+    expect(liveOverlays()).toEqual([])
+    expect(dom.app.findByClass('board__overlays')?.dataset['layer']).toBe('')
+  })
+
+  it('marks exactly one number when a straight-up is staked', async () => {
+    await loadEntry()
+
+    number('17')?.click()
+    number('17')?.click()
+
+    const staked = dom.app
+      .findAllByClass('board__number')
+      .filter((node) => node.classList.contains('board__number--staked'))
+    expect(staked).toHaveLength(1)
+    expect(staked[0]?.textContent).toBe('17')
+  })
+
+  it('keeps a staked overlay visible but out of the way once its family is disarmed', async () => {
+    await loadEntry()
+
+    layerButton('street')?.click()
+    const firstStreet = overlays().find((node) =>
+      node.classList.contains('board__overlay--street'),
+    )
+    expect(firstStreet?.hidden).toBe(false)
+    firstStreet?.click()
+    expect(firstStreet?.classList.contains('board__overlay--staked')).toBe(true)
+
+    layerButton('numbers')?.click()
+
+    // A chip the player cannot see is a bet they think they lost, so the
+    // overlay stays painted. What must not survive is its hit target.
+    expect(firstStreet?.hidden).toBe(false)
+    expect(firstStreet?.dataset['armed']).toBe('false')
+  })
+})

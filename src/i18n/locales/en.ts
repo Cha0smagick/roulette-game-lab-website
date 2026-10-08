@@ -84,6 +84,7 @@ export const en = {
   'bet.cornerNumbers': 'Corner {numbers}',
   'bet.lineNumbers': 'Six line {numbers}',
   'board.layers': 'Bet layer',
+  'board.layer.numbers': 'Numbers',
   'board.layer.street': 'Street',
   'board.layer.corner': 'Corner',
   'board.layer.line': 'Six line',

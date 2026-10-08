@@ -198,3 +198,48 @@ describe('the shell respects the device it is on', () => {
     expect(customProperties(base).get('--touch-target')).toBe('44px')
   })
 })
+
+/**
+ * The board paints two grids on top of each other: the numbers and the
+ * overlay layer that draws street, corner and line rectangles. If those two
+ * do not share one column template the outlines name numbers they do not sit
+ * on, and the overlay intercepts taps meant for the numbers underneath.
+ *
+ * Both grids therefore take their template from a single custom property on
+ * the felt, and `inherit` is banned outright: it reads the PARENT's computed
+ * value, which for a block element is `none`, so an overlay grid declared
+ * `inherit` silently fell into implicit columns about eleven pixels wide at
+ * 320px. That is not a value a test can eyeball from a screenshot, so it is
+ * pinned here.
+ */
+describe('the two board grids share one column template', () => {
+  const board = read(join(STYLE_DIR, 'board.css'))
+
+  it('declares the template once, on the felt that holds both grids', () => {
+    expect(board).toMatch(
+      /\.board__felt\s*\{[^}]*--cols\s*:\s*repeat\(3,\s*var\(--cell\)\)/,
+    )
+  })
+
+  it('widens the zero column through the same property, not a second grid rule', () => {
+    expect(board).toMatch(/\.board__felt--with-zero\s*\{[^}]*--cols\s*:/)
+    expect(board).not.toContain('board__grid--with-zero')
+  })
+
+  it('takes the template from the property in both grids', () => {
+    expect(board).toMatch(/\.board__grid\s*\{[^}]*grid-template-columns:\s*var\(--cols\)/)
+    expect(board).toMatch(
+      /\.board__overlays\s*\{[^}]*grid-template-columns:\s*var\(--cols\)/,
+    )
+    expect(board).not.toMatch(/grid-template-columns:\s*inherit/)
+  })
+
+  it('removes the hit target of an overlay that is painted but not armed', () => {
+    // `hidden` deletes the box. This covers the case the deletion cannot reach:
+    // a staked overlay in a family the player has since switched away from,
+    // which stays visible so its chip is not invisible, and must not eat taps.
+    expect(board).toMatch(
+      /\.board__overlay\[data-armed='false'\]\s*\{[^}]*pointer-events:\s*none/,
+    )
+  })
+})
