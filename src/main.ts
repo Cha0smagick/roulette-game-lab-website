@@ -16,6 +16,9 @@ import { createWheelRenderer } from './ui/wheel.js'
 import type { WheelRenderer } from './ui/wheel.js'
 import { createBoard, type Board } from './ui/board.js'
 import { createChipPicker, type ChipPicker } from './ui/chips.js'
+import { createHistoryStrip } from './ui/history.js'
+import { loadHistory, recordOutcome } from './ui/history-store.js'
+import type { History } from './roulette/history.js'
 import { createAdSlot } from './ui/adslot.js'
 import { boot } from './ui/boot.js'
 import {
@@ -86,6 +89,7 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   let seed = newSeed()
   let rng: Rng = createRng(seed)
   let spins = 0
+  let history: History = loadHistory()
 
   const section = document.createElement('main')
   section.className = 'table'
@@ -96,6 +100,13 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   canvas.setAttribute('aria-label', t('table.wheel'))
   section.append(canvas)
   const wheel = createWheelRenderer(canvas, EUROPEAN)
+
+  // Directly under the wheel, because a strip of history next to the thing that
+  // produced it is the pairing that makes it checkable. It records spins and
+  // nothing else: no repeats are highlighted and nothing is marked as due.
+  const strip = createHistoryStrip()
+  strip.render(history)
+  section.append(strip.element)
 
   const balance = buildStat('table.balance')
   const wager = buildStat('table.wager')
@@ -188,6 +199,8 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
     spins += 1
     dispatch({ type: 'spin', outcome: pocket })
     describe(pocket)
+    history = recordOutcome(history, pocket)
+    strip.render(history)
   }
 
   function render(): void {

@@ -12,16 +12,17 @@ export default defineConfig({
     // Hard budget. CI fails the deploy when gzipped output exceeds this.
     // See PLAN.md section 1.
     reportCompressedSize: true,
-    // Multipage, not a single-page app. Three HTML entries means the browser
-    // can navigate, reload, bookmark and back-button each page, and there is no
-    // client router to misroute a deep link. encyclopedia.html is added in F11
-    // when that page exists; listing a missing file here fails the build.
+// Multipage, not a single-page app. Four HTML entries mean the browser can
+    // navigate, reload, bookmark and back-button each page, and there is no
+    // client router to misroute a deep link. Listing a file here that does not
+    // exist fails the build, which is why each page is created first.
     rollupOptions: {
       input: {
         index: 'index.html',
-simulator: 'simulator.html',
-    encyclopedia: 'encyclopedia.html',
-  },
+        simulator: 'simulator.html',
+        analysis: 'analysis.html',
+        encyclopedia: 'encyclopedia.html',
+      },
     },
   },
   server: {

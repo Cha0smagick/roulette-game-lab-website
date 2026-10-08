@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1026" />
+    <meta
+      name="description"
+      content="Live counts of the roulette spins you have played, shown beside what a fair wheel produces. Nothing here is a prediction."
+    />
+    <title>Roulette Lab - Analysis</title>
+  </head>
+  <body>
+    <!--
+      The boot markup lives in the HTML rather than in the bundle so a bundle
+      that never loads still shows something honest. Without it the page is a
+      blank navy rectangle, which reads as an unfinished site rather than as a
+      failure nobody can diagnose.
+    -->
+    <div id="app" class="boot">
+      <p class="boot__brand">Roulette Lab</p>
+      <p class="boot__msg">Loading&hellip;</p>
+      <noscript>
+        <p class="boot__msg">Roulette Lab needs JavaScript to run.</p>
+      </noscript>
+    </div>
+    <script type="module" src="/src/analysis.ts"></script>
+  </body>
+</html>

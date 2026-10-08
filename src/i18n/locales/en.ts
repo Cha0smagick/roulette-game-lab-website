@@ -14,6 +14,7 @@ export const en = {
   'nav.table': 'Table',
   'nav.simulator': 'Simulator',
   'nav.encyclopedia': 'Encyclopedia',
+  'nav.analysis': 'Analysis',
   'nav.language': 'Language',
   'nav.primary': 'Primary',
   'tagline': 'Measure the wheel, do not guess it.',
@@ -22,6 +23,7 @@ export const en = {
   'h1.table': 'Roulette Table',
   'h1.simulator': 'Strategy Simulator',
   'h1.encyclopedia': 'Roulette Encyclopedia',
+  'h1.analysis': 'Live analysis',
 
   // ---- Table controls -----------------------------------------------------
   'table.spin': 'Spin',
@@ -225,6 +227,33 @@ export const en = {
     'There are no mechanics designed to make a session hard to end: no timers that expire, no streak that punishes leaving, no false scarcity, no near-miss framed as a loss the game cheated you of, and no tracking of how long or how often anyone plays. Retention is not a design goal here, because a tool that works by being difficult to stop using is not an analysis tool.',
   'art.legitimacy.noPrediction':
     'There is no number to bet on next. The wheel is a physical random process and no method overcomes it; anything that claimed otherwise would be selling something. What this engine offers is the arithmetic and the ability to run it, which is the part that is actually useful.',
+
+  // ---- Live history and observed counts (G1) -------------------------------
+  // Every label in this block describes something MEASURED. None of them is a
+  // prediction, and none of them is presented without the note that a wheel has
+  // no memory, because a count printed next to the word "hot" is exactly the
+  // number players misuse.
+  'analysis.intro':
+    'Everything on this page is a count of spins that actually happened, shown next to what a fair wheel would produce.',
+  'analysis.source':
+    'Read from this browser only. Spins played elsewhere are not counted here, and nothing leaves your device.',
+  'hist.title': 'Spin history',
+  'hist.newest': 'Most recent first',
+  'hist.empty': 'No spins recorded yet. Play a few on the table page.',
+  'hist.cell': '{number}, {colour}',
+  'common.colour.red': 'red',
+  'common.colour.black': 'black',
+  'common.colour.green': 'green',
+  'stats.title': 'Observed counts',
+  'stats.total': 'Spins recorded',
+  'stats.colourRun': 'Current colour run',
+  'stats.pocketStreak': 'Repeated number',
+  'stats.hottest': 'Most frequent',
+  'stats.coldest': 'Least frequent',
+  'stats.none': 'None',
+  'stats.inARow': '{count} in a row',
+  'stats.caption':
+    'These are observations, not signals. The wheel has no memory, so none of these counts changes the odds of the next spin.',
 
   // ---- Shared -------------------------------------------------------------
   'ad.label': 'Advertisement',

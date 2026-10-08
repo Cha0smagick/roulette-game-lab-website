@@ -1,0 +1,176 @@
+/*
+ * The analysis page.
+ *
+ * Loaded only by analysis.html, so everything here is safe to override: a
+ * page-scoped override that leaked would be a bug on three other pages, and
+ * sim.css set the precedent of keeping page styles page-scoped.
+ */
+
+/*
+ * base.css centres the shell on a full viewport height, which is right for the
+ * table (one panel, no scrolling) and wrong for a page that is taller than the
+ * screen. Overriding here rather than changing base.css is what keeps the
+ * table's layout untouched.
+ */
+.shell--page {
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0 1rem 1.5rem;
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-loose);
+  width: min(100%, 68ch);
+  text-align: start;
+}
+
+.analysis__intro {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.analysis__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+}
+
+.analysis__subtitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: 1.2;
+}
+
+.analysis__source {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ---- The spin strip ----------------------------------------------------- */
+
+.hist__wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+}
+
+.hist__caption {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/*
+ * The strip scrolls sideways rather than wrapping. A hundred cells that wrap
+ * would push everything below them off the screen, and the number of cells is
+ * the number of spins the engine kept -- it is data, not decoration, so it
+ * cannot be capped to suit the layout.
+ */
+.hist {
+  display: flex;
+  gap: 3px;
+  margin: 0;
+  padding: 0 0 0.35rem;
+  list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hist__cell {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 34px;
+  border-radius: 4px;
+  border: 1px solid rgb(245 242 232 / 12%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+.hist__cell[data-colour='red'] {
+  background: var(--red);
+}
+
+.hist__cell[data-colour='black'] {
+  background: var(--black);
+}
+
+.hist__cell[data-colour='green'] {
+  background: var(--green);
+}
+
+.hist__empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Observed counts ---------------------------------------------------- */
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+}
+
+.stats__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+}
+
+.stats__list {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgb(245 242 232 / 10%);
+  border-radius: var(--radius);
+  background: rgb(245 242 232 / 3%);
+}
+
+.stats__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+.stats__value {
+  margin: 0;
+  color: var(--bone);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.stats__caption {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hist__cell {
+    transition: background-color 150ms ease;
+  }
+}

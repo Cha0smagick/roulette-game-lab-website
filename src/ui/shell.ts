@@ -14,6 +14,7 @@ import type { TranslationKey } from '../i18n/index.js'
 export const PAGES = [
   { href: './', key: 'nav.table' },
   { href: './simulator.html', key: 'nav.simulator' },
+  { href: './analysis.html', key: 'nav.analysis' },
   { href: './encyclopedia.html', key: 'nav.encyclopedia' },
 ] as const satisfies readonly { href: string; key: TranslationKey }[]
 

@@ -10,6 +10,7 @@ export const es: Record<TranslationKey, string> = {
   'nav.table': 'Mesa',
   'nav.simulator': 'Simulador',
   'nav.encyclopedia': 'Enciclopedia',
+  'nav.analysis': 'Análisis',
   'nav.language': 'Idioma',
   'nav.primary': 'Principal',
   'tagline': 'Mide la rueda, no la adivines.',
@@ -17,6 +18,7 @@ export const es: Record<TranslationKey, string> = {
   'h1.table': 'Mesa de ruleta',
   'h1.simulator': 'Simulador de estrategias',
   'h1.encyclopedia': 'Enciclopedia de ruleta',
+  'h1.analysis': 'Análisis en vivo',
 
   'table.spin': 'Girar',
   'table.clear': 'Limpiar apuestas',
@@ -212,6 +214,29 @@ export const es: Record<TranslationKey, string> = {
     'No hay mecánicas diseñadas para que una sesión cueste terminar: ni temporizadores que caducan, ni rachas que castiguen marcharse, ni escasez falsa, ni casi-ganancias presentadas como pérdidas que el juego te arrebató, ni registro de cuánto o cuántas veces juega nadie. La retención no es un objetivo de diseño aquí, porque una herramienta que funciona por ser difícil de dejar de usar no es una herramienta de análisis.',
   'art.legitimacy.noPrediction':
     'No hay un número al que apostar la próxima vez. La rueda es un proceso físico aleatorio y ningún método lo vence; cualquier cosa que afirmara lo contrario estaría vendiendo algo. Lo que ofrece este motor es la aritmética y la posibilidad de ejecutarla, que es la parte realmente útil.',
+
+  // ---- Historial en vivo y recuentos observados (G1) ---------------------
+  'analysis.intro':
+    'Todo en esta página es un recuento de tiradas que ocurrieron de verdad, mostrado junto a lo que produciría una rueda justa.',
+  'analysis.source':
+    'Se lee solo de este navegador. Las tiradas jugadas en otro sitio no se cuentan aquí, y nada sale de tu dispositivo.',
+  'hist.title': 'Historial de tiradas',
+  'hist.newest': 'Lo más reciente primero',
+  'hist.empty': 'Aún no hay tiradas registradas. Juega unas cuantas en la mesa.',
+  'hist.cell': '{number}, {colour}',
+  'common.colour.red': 'rojo',
+  'common.colour.black': 'negro',
+  'common.colour.green': 'verde',
+  'stats.title': 'Recuentos observados',
+  'stats.total': 'Tiradas registradas',
+  'stats.colourRun': 'Racha de color actual',
+  'stats.pocketStreak': 'Número repetido',
+  'stats.hottest': 'Más frecuentes',
+  'stats.coldest': 'Menos frecuentes',
+  'stats.none': 'Ninguno',
+  'stats.inARow': '{count} seguidas',
+  'stats.caption':
+    'Son observaciones, no señales. La rueda no tiene memoria, así que ninguno de estos recuentos cambia las probabilidades de la próxima tirada.',
 
   'ad.label': 'Publicidad',
   'common.loading': 'Cargando…',

@@ -53,7 +53,7 @@ class StubClassList {
   }
 }
 
-class StubElement {
+export class StubElement {
   readonly tagName: string
   readonly nodeName: string
   readonly nodeType = 1
@@ -362,10 +362,20 @@ export function installDom(): InstalledDom {
 
   const target = globalThis as unknown as Mutable
   target['document'] = stubDocument
+  // A real Map-backed store, not a no-op that answers every read with null.
+  // A stub that silently discarded writes made the whole persistence layer
+  // untestable in the worst possible way: the store returned no history, the
+  // page painted nothing, and the assertion that was supposed to check the page
+  // was never actually reached.
+  const store = new Map<string, string>()
   target['localStorage'] = {
-    getItem: (): string | null => null,
-    setItem: (): void => undefined,
-    removeItem: (): void => undefined,
+    getItem: (key: string): string | null => store.get(key) ?? null,
+    setItem: (key: string, value: string): void => {
+      store.set(key, value)
+    },
+    removeItem: (key: string): void => {
+      store.delete(key)
+    },
   }
   const stubNavigator = {
     languages: ['en-US', 'en'],
