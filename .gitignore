@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.vite/
+
+# test output
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+
+# environment / secrets
+.env
+.env.*
+!.env.example
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+*.swp
+
+# ---------------------------------------------
+# Agent / tooling artifacts.
+# These are local tool state, NOT project source.
+# They must never enter the repository.
+# ---------------------------------------------
+.omo/
+.opencode/
+.codegraph/
+undefined/
