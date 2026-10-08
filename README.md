@@ -1,5 +1,9 @@
 # REELAZO
 
+[![Deploy](https://github.com/Cha0smagick/Ads-Bet-an-ads-game/actions/workflows/deploy.yml/badge.svg)](https://cha0smagick.github.io/Ads-Bet-an-ads-game/)
+
+**Live site: <https://cha0smagick.github.io/Ads-Bet-an-ads-game/>**
+
 A roulette analysis engine for the browser. Three pages, no backend, no accounts,
 no money — and no predictions, because a wheel is a physical random process and
 nothing predicts one.
@@ -126,13 +130,24 @@ database, no environment variables.
 
 ### Deploying
 
-Pushing to `main` builds and publishes automatically. One thing has to be true
-in the repository settings first, and it is easy to miss because the workflow
-will fail in a way that does not name the cause:
+Pushing to `main` runs the **Deploy** workflow, which is four gates in order:
+`npm ci`, then `npm run verify`, then the gzipped size budget, then publish. Any
+of the first three failing stops the deploy, so a red test never becomes a live
+site and a bundle that grew past the budget never reaches a phone.
 
-**Settings → Pages → Build and deployment → Source must be set to
-"GitHub Actions".** If it is set to a branch, the workflow runs, passes, and then
-cannot publish, because the two mechanisms write to different places.
+Two things are worth knowing because neither is visible from the code.
+
+**Pages is configured to GitHub Actions, not to a branch.** That setting lives in
+the repository settings, not in the repository. It is also the half of the
+arrangement that fails quietly: pointed at a branch, the workflow goes green and
+then cannot publish, and the error does not name the cause. If a push succeeds and
+the site does not change, check that first.
+
+**The build uses a relative `base`.** `base: './'` in `vite.config.ts` means every
+asset reference is relative, which is what lets the same build work under a
+project subpath like `/Ads-Bet-an-ads-game/` with no change. A single-slash base
+would have broken every route and every chunk fetch the moment the site was
+served from anything other than a domain root.
 
 ## Size budget
 
@@ -175,10 +190,13 @@ something. Notable ones:
 
 ## Status and honest gaps
 
-- **Visual QA has not been done.** Nothing here has been opened in a real
-  browser at any viewport. The responsive work so far is a static audit of the
-  CSS and HTML — viewport meta, fixed widths, safe areas, touch targets — which
-  is a real check of a real class of bug and is not the same as looking at it.
+- **Visual QA has not been done.** The site is published and nobody has opened it
+  in a real browser at any viewport. The responsive work so far is a static audit
+  of the CSS and HTML — viewport meta, fixed widths, safe areas, touch targets —
+  which is a real check of a real class of bug and is not the same as looking at
+  it. If something looks wrong on a phone, that is the least surprising thing
+  about this project and the bug report template asks for the viewport for
+  exactly that reason.
 - **The ad unit is not approved for this domain yet**, so ad revenue is zero.
 - The encyclopedia covers the arithmetic, not the folklore. There is no history
   of the game, no biographies, no casino-culture writing.

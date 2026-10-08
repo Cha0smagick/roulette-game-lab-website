@@ -375,16 +375,18 @@ It gets its own commit and its own tests before anything renders.
 - `npm run verify` green; size budget holds.
 - House edge proven to 12 dp on every variant; straight-up pays exactly 35:1.
 - Switch to Spanish, then German: only a dictionary file is added.
-- One push deploys it, once Pages is set to build from GitHub Actions.
+- One push deploys it. **Met:** Pages is set to build from GitHub Actions and the
+  workflow publishes `dist/` to it.
 - **No line of code anywhere grants, increments, or animates anything in
   response to an ad interaction.**
 
 The first bullet of this list is **not yet met**, and the reason is worth more
 than the bullet: `npm run verify` cannot tell you that a page renders. Nothing in
-this project has been opened in a real browser at any viewport. The CSS and HTML
-have been audited statically (viewport meta, fixed widths, safe areas, touch
-targets, zoom pinning), which is a real check of a real class of bug and is not
-the same as looking at the thing.
+this project has been opened in a real browser at any viewport, and the site is
+now published, so that gap has a visible consequence rather than a theoretical
+one. The CSS and HTML have been audited statically (viewport meta, fixed widths,
+safe areas, touch targets, zoom pinning), which is a real check of a real class
+of bug and is not the same as looking at the thing.
 
 ---
 
@@ -399,10 +401,14 @@ the same as looking at the thing.
 4. **Visual QA.** Open all three pages in a real browser at 320 / 360 / 390 /
    430 / 768 / 1280 px, check the console is clean, and confirm the wheel lands
    on the number the reducer settled. Until that happens the responsive work is a
-   static audit and the first bullet of the definition of done is unmet.
-5. **GitHub Pages source must be set to "GitHub Actions"** in the repository
-   settings before the first deploy can publish. The workflow will not fail on
-   this; it will pass and then silently not publish.
+   static audit and the first bullet of the definition of done is unmet. The site
+   is now published, which makes this the highest-value remaining item: it is the
+   only open item whose failure mode is a visitor seeing a broken page.
+5. ~~**GitHub Pages source must be set to "GitHub Actions"**~~ — **done.** The
+   setting has been applied in the repository settings, so the deploy workflow can
+   publish. Kept as a numbered item rather than deleted because the failure mode
+   is worth remembering: the workflow does not fail when this is wrong, it passes
+   and then silently does not publish.
 
 ---
 
