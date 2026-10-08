@@ -1,0 +1,103 @@
+:root {
+  /* Palette: navy ground, amber for fuel/energy, cyan for interaction. */
+  --navy: #0b1026;
+  --navy-light: #131a3a;
+  --amber: #ffb03a;
+  --cyan: #35c4d9;
+  --white: #f5f7ff;
+  --muted: #8a93b8;
+  --danger: #f87171;
+
+  /* Respect the user's OS setting instead of assuming dark. */
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  /* Prevents the whole page from rubber-banding while reels spin. */
+  overscroll-behavior-y: none;
+}
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family:
+    'Helvetica Neue', Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Kills the 300ms tap delay on mobile Safari/Chrome. Without this a tap on
+     the spin button feels dead and players tap twice, wasting spins. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Stops iOS from zooming the page when a double-tap lands on a control. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+#app {
+  /* Safe-area padding so nothing is hidden under notches or the home bar. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Boot placeholder, replaced by the game shell on mount. */
+.boot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 100dvh;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.boot__brand {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+}
+
+.boot__msg {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* F1 shell. Mobile-first: single column, grows on wider screens. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 100dvh;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.shell__brand {
+  margin: 0;
+  font-size: clamp(2.25rem, 12vw, 4rem);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+}
+
+.shell__tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+}
