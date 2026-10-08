@@ -1,0 +1,227 @@
+/**
+ * Betting board layout.
+ *
+ * The whole board has to work at 320 px, which is the width of the cheapest
+ * phone still worth supporting. Two rules follow from that:
+ *
+ *  1. The number grid never shrinks below a legible glyph. Corners and six
+ *     lines are transparent overlays on top of it, not extra cells, because
+ *     adding cells would push the numbers below ~9 px.
+ *  2. Every tappable thing is at least 44 px in its smaller dimension, which
+ *     is the smallest target a thumb can reliably hit.
+ *
+ * Both zero columns sit to the LEFT of the grid, matching the physical layout
+ * of a real table, where the zeros are the long green bet at the end of the row.
+ */
+
+.board {
+  --board-felt: #0e5c3f;
+  --board-felt-dark: #08402c;
+  --board-brass: #c9a227;
+  --board-bone: #f5f2e8;
+  --cell: minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  padding-inline: max(6px, env(safe-area-inset-left)) max(6px, env(safe-area-inset-right));
+}
+
+/* ---------------------------------------------------------------- layers --- */
+
+.board__layers {
+  display: flex;
+  gap: 6px;
+}
+
+.board__layer {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 8px 4px;
+  border: 1px solid rgb(201 162 39 / 45%);
+  border-radius: 6px;
+  background: #0b1026;
+  color: var(--board-bone);
+  font: 600 12px/1.2 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  touch-action: manipulation;
+}
+
+.board__layer[aria-pressed='true'] {
+  background: var(--board-brass);
+  border-color: var(--board-brass);
+  color: #0b1026;
+}
+
+.board__layer:disabled {
+  opacity: 40%;
+}
+
+/* ------------------------------------------------------------------ felt --- */
+
+.board__felt {
+  position: relative;
+  padding: 4px;
+  border: 1px solid rgb(201 162 39 / 35%);
+  border-radius: 8px;
+  background: linear-gradient(160deg, var(--board-felt), var(--board-felt-dark));
+}
+
+.board__grid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(12, minmax(22px, 1fr));
+  gap: 2px;
+}
+
+.board__number {
+  display: grid;
+  place-items: center;
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: #15151a;
+  color: var(--board-bone);
+  font: 600 clamp(11px, 3.4vw, 15px) / 1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+}
+
+.board__number[data-colour='red'] {
+  background: #9b1b30;
+}
+
+.board__number[data-colour='green'] {
+  background: #0b5d3b;
+}
+
+/* A zero is 2 numbers in one cell on the no-zero-excluded tables and the
+   label is wider than the glyph, so the zero column is wider than one track
+   and the grid is laid out as [zero][3 columns]. */
+.board__grid--with-zero {
+  grid-template-columns: minmax(28px, 1.2fr) repeat(3, var(--cell));
+}
+
+.board__number--staked {
+  box-shadow: inset 0 0 0 2px var(--board-brass);
+}
+
+.board__number--armed {
+  outline: 2px solid var(--board-brass);
+  outline-offset: -2px;
+}
+
+.board__number:disabled {
+  opacity: 45%;
+}
+
+/* -------------------------------------------------------------- overlays --- */
+
+/*
+ * The overlay grid is a pixel-identical copy of the number grid, laid over it,
+ * so a single `grid-column`/`grid-row` span expresses "this rectangle of the
+ * board" for every bet kind. The buttons themselves are transparent and draw
+ * their outline with a pseudo-element, which keeps the digits beneath legible.
+ */
+.board__overlays {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  grid-template-columns: inherit;
+  grid-template-rows: repeat(12, minmax(22px, 1fr));
+  gap: 2px;
+  pointer-events: none;
+}
+
+.board__overlay {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.board__overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(201 162 39 / 55%);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.board__overlay[hidden] {
+  display: none;
+}
+
+.board__overlay--corner::after {
+  inset: 22% 22%;
+}
+
+.board__overlay--line::after {
+  inset: 26% 3%;
+}
+
+.board__overlay--staked::after {
+  border-color: var(--board-brass);
+  background: rgb(201 162 39 / 30%);
+}
+
+.board__overlay:hover::after {
+  border-color: var(--board-brass);
+}
+
+.board__overlay:disabled {
+  opacity: 40%;
+}
+
+/* --------------------------------------------------------------- outside --- */
+
+.board__outside {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.board__outside-bet {
+  min-height: 44px;
+  padding: 6px 2px;
+  border: 1px solid rgb(201 162 39 / 40%);
+  border-radius: 6px;
+  background: #15151a;
+  color: var(--board-bone);
+  font: 600 clamp(10px, 2.8vw, 13px) / 1.15 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  touch-action: manipulation;
+}
+
+.board__outside-bet[data-colour='red'] {
+  background: #9b1b30;
+}
+
+.board__outside-bet[data-colour='black'] {
+  background: #1c1c22;
+}
+
+.board__outside-bet--staked {
+  box-shadow: inset 0 0 0 2px var(--board-brass);
+}
+
+.board__outside-bet:disabled {
+  opacity: 45%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .board__number,
+  .board__outside-bet,
+  .board__layer {
+    transition: filter 90ms ease-out, box-shadow 90ms ease-out;
+  }
+
+  .board__number:active,
+  .board__outside-bet:active,
+  .board__layer:active {
+    filter: brightness(0.9);
+  }
+}

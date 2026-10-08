@@ -1,0 +1,149 @@
+/**
+ * Settlement readouts, controls and the seed line.
+ *
+ * Every number here is tabular so that a changing balance does not shift the
+ * digits sideways. The net figure is the only place colour is used to carry
+ * meaning, and it is always accompanied by the sign that `formatCurrency`
+ * already prints, so the colour is redundant rather than load-bearing for
+ * anyone who cannot distinguish it.
+ */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.controls__spin {
+  min-height: 58px;
+  border: 1px solid #c9a227;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #c9a227, #8a6f16);
+  color: #0b1026;
+  font: 800 16px/1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  touch-action: manipulation;
+}
+
+.controls__spin:disabled {
+  opacity: 45%;
+}
+
+.controls__row {
+  display: flex;
+  gap: 6px;
+}
+
+.controls__small {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 8px 4px;
+  border: 1px solid rgb(201 162 39 / 45%);
+  border-radius: 6px;
+  background: #0b1026;
+  color: #f5f2e8;
+  font: 600 13px/1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  touch-action: manipulation;
+}
+
+.controls__small:disabled {
+  opacity: 40%;
+}
+
+.hud__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.hud__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid rgb(201 162 39 / 22%);
+  border-radius: 6px;
+  background: #10162f;
+}
+
+.hud__stat-label {
+  color: #8a93b8;
+  font: 600 10px/1.2 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/*
+ * The label and the value were appended as siblings to the same wrapper, so the
+ * grid needs the wrapper to carry both.
+ */
+.hud__stats > .hud__stat-label {
+  display: none;
+}
+
+.hud__stat-value {
+  color: #f5f2e8;
+  font: 700 17px/1.1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__stat-value--negative {
+  color: #f87171;
+}
+
+.hud__stat-value--positive {
+  color: #4ade80;
+}
+
+.hud__result {
+  min-height: 1.4em;
+  margin: 0;
+  color: #f5f2e8;
+  font: 600 15px/1.4 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+
+.hud__seed {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  color: #8a93b8;
+  font: 600 11px/1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.hud__seed-value {
+  color: #f5f2e8;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__seed .controls__small {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .controls__spin,
+  .controls__small {
+    transition: filter 90ms ease-out;
+  }
+
+  .controls__spin:active,
+  .controls__small:active {
+    filter: brightness(0.92);
+  }
+}

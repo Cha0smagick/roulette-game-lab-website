@@ -68,6 +68,13 @@ export const es: Record<TranslationKey, string> = {
   'bet.even': 'Par',
   'bet.low': '1–18',
   'bet.high': '19–36',
+  'bet.streetNumbers': 'Transversal {numbers}',
+  'bet.cornerNumbers': 'Cuadrada {numbers}',
+  'bet.lineNumbers': 'Seis números {numbers}',
+  'board.layers': 'Capa de apuesta',
+  'board.layer.street': 'Transversal',
+  'board.layer.corner': 'Cuadrada',
+  'board.layer.line': 'Seis números',
 
   'sim.run': 'Ejecutar simulación',
   'sim.running': 'Ejecutando…',

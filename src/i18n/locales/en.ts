@@ -77,6 +77,16 @@ export const en = {
   'bet.even': 'Even',
   'bet.low': '1–18',
   'bet.high': '19–36',
+  // The board needs a label that names the covered numbers, because the overlay
+  // is a transparent rectangle and its position alone tells a screen reader
+  // nothing.
+  'bet.streetNumbers': 'Street {numbers}',
+  'bet.cornerNumbers': 'Corner {numbers}',
+  'bet.lineNumbers': 'Six line {numbers}',
+  'board.layers': 'Bet layer',
+  'board.layer.street': 'Street',
+  'board.layer.corner': 'Corner',
+  'board.layer.line': 'Six line',
 
   // ---- Simulator ----------------------------------------------------------
   'sim.run': 'Run simulation',
