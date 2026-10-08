@@ -15,7 +15,7 @@ export const LOCALES = {
 
 export type LocaleCode = keyof typeof LOCALES
 
-const STORAGE_KEY = 'reelazo.locale'
+const STORAGE_KEY = 'roulette-lab.locale'
 const DEFAULT_LOCALE: LocaleCode = 'en'
 
 function isLocaleCode(value: string): value is LocaleCode {

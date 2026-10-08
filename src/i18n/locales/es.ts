@@ -12,7 +12,7 @@ export const es: Record<TranslationKey, string> = {
   'nav.encyclopedia': 'Enciclopedia',
   'nav.language': 'Idioma',
   'nav.primary': 'Principal',
-  'tagline': 'La publicidad es tu combustible.',
+  'tagline': 'Mide la rueda, no la adivines.',
 
   'h1.table': 'Mesa de ruleta',
   'h1.simulator': 'Simulador de estrategias',

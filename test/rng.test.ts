@@ -3,8 +3,8 @@ import { createRng, seedFromString } from '../src/util/rng';
 
 describe('rng', () => {
   it('produces identical streams for identical seeds', () => {
-    const a = createRng('reelazo-seed');
-    const b = createRng('reelazo-seed');
+const a = createRng('roulette-lab-seed');
+const b = createRng('roulette-lab-seed');
     for (let i = 0; i < 200; i += 1) {
       expect(a.next()).toBe(b.next());
     }
@@ -77,7 +77,7 @@ describe('rng', () => {
   });
 
   it('hashes distinct strings to distinct uint32s', () => {
-    const hashes = new Set(['a', 'b', 'c', 'REELAZO', ''].map(seedFromString));
+    const hashes = new Set(['a', 'b', 'c', 'Roulette Lab', ''].map(seedFromString));
     expect(hashes.size).toBe(5);
   });
 });

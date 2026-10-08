@@ -26,7 +26,7 @@ export function buildHeader(currentHref: string): HTMLElement {
   brand.href = './'
   // The exemption marker must sit on the same line as the literal; the copy
   // guard is a line scanner and cannot see a comment on the line above.
-  brand.textContent = 'REELAZO' // i18n-exempt: proper noun, same in every language
+  brand.textContent = 'Roulette Lab' // i18n-exempt: proper noun, same in every language
   header.append(brand)
 
   const tagline = document.createElement('p')

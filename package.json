@@ -1,9 +1,9 @@
 {
-  "name": "reelazo",
+  "name": "roulette-lab",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "REELAZO - the ad break IS the game. Mobile-first web slot machine where ad views are the fuel.",
+  "description": "Roulette analysis engine for the browser. Play the wheel, simulate betting systems, read the arithmetic. No accounts, no money, no predictions.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

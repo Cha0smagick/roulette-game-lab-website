@@ -1,4 +1,4 @@
-# REELAZO
+# Roulette Lab
 
 [![Deploy](https://github.com/Cha0smagick/roulette-game-lab-website/actions/workflows/deploy.yml/badge.svg)](https://cha0smagick.github.io/roulette-game-lab-website/)
 

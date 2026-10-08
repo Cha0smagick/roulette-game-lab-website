@@ -16,7 +16,7 @@ export const en = {
   'nav.encyclopedia': 'Encyclopedia',
   'nav.language': 'Language',
   'nav.primary': 'Primary',
-  'tagline': 'La publicidad es tu combustible.',
+  'tagline': 'Measure the wheel, do not guess it.',
 
   // ---- Headings -----------------------------------------------------------
   'h1.table': 'Roulette Table',

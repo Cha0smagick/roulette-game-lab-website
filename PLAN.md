@@ -1,4 +1,4 @@
-# REELAZO — Atomic Implementation Plan
+# Roulette Lab — Atomic Implementation Plan
 
 A roulette analysis engine. Free, no real money, monetized by display ads.
 
@@ -8,23 +8,25 @@ A roulette analysis engine. Free, no real money, monetized by display ads.
 
 | | |
 |---|---|
-| Name | **REELAZO** |
-| Tagline | "La publicidad es tu combustible." |
-| Package | `reelazo` |
+| Name | **Roulette Lab** |
+| Tagline | "Measure the wheel, do not guess it." |
+| Package | `roulette-lab` |
 | Repo | `roulette-game-lab-website` |
 | Language of product | **English** (i18n-ready) |
 | Deployment | GitHub Pages via Actions, `base: './'` |
 
-The name contains "reel", which is also the roulette mechanism. It reads
-aloud correctly and is spellable after one hearing.
+The name says what the site is, which is what a name in a browser tab has to do.
+An earlier name was chosen because it contained "reel", which is also the
+roulette mechanism; it was dropped because it read as a brand rather than as a
+description, and someone landing on the page from a search result has no way to
+find out what it is.
 
-The repository is `roulette-game-lab-website` while the npm package stays
-`reelazo`. The two serve different audiences and the split is deliberate: the
-repository name is a URL a visitor types and the Pages path is derived from it,
-so it should describe what the project does; the package name is the brand that
-appears on the site. Renaming the repository therefore changes the published URL
-to `/roulette-game-lab-website/` and touches no build configuration, because
-`base: './'` makes every asset reference relative.
+The repository is `roulette-game-lab-website` and the npm package is
+`roulette-lab`. The repository name is the URL a visitor types and the Pages
+path is derived from it; the package name is what `npm` shows. Neither is the
+brand, which is why they are allowed to differ from it. Renaming the repository
+changed the published URL to `/roulette-game-lab-website/` and touched no build
+configuration, because `base: './'` makes every asset reference relative.
 
 ---
 

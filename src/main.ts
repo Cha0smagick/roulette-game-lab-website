@@ -229,8 +229,8 @@ function mount(root: HTMLElement): void {
 
   // Exposed on the root purely so the browser console can audit a landed number
   // against the printed seed instead of trusting the pixels.
-  const audit = root as HTMLElement & { reelazoWheel?: WheelRenderer }
-  audit.reelazoWheel = table.wheel
+  const audit = root as HTMLElement & { rouletteLabWheel?: WheelRenderer }
+  audit.rouletteLabWheel = table.wheel
 }
 
 boot('app', (root) => {

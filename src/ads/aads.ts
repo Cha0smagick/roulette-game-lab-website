@@ -1,5 +1,5 @@
 /**
- * aads.com (Anonymous Ads) web display unit — the only ad integration in REELAZO.
+ * aads.com (Anonymous Ads) web display unit — the only ad integration in Roulette Lab.
  *
  * Read this before changing anything in this file.
  *
