@@ -389,6 +389,8 @@ It gets its own commit and its own tests before anything renders.
   workflow publishes `dist/` to it.
 - **No line of code anywhere grants, increments, or animates anything in
   response to an ad interaction.**
+- **Every number the analysis pages publish appears beside the rate a fair wheel
+  predicts** (§9.0). A measured rate with no comparison is not a result.
 
 The first bullet of this list is **not yet met**, and the reason is worth more
 than the bullet: `npm run verify` cannot tell you that a page renders. Nothing in
@@ -419,6 +421,17 @@ of bug and is not the same as looking at the thing.
    publish. Kept as a numbered item rather than deleted because the failure mode
    is worth remembering: the workflow does not fail when this is wrong, it passes
    and then silently does not publish.
+6. **The test DOM stub cannot catch a hit-testing bug.**
+   `test/helpers/dom.ts` fires an element's own click handlers and has no layout
+   engine and no hit testing. A page can therefore pass every behavioural test and
+   still be unusable in a browser, which is exactly what happened: `ceb242c` fixed a
+   board whose overlay layer sat above the number grid and swallowed every tap, and
+   the pre-existing arm/commit test passed the whole time. The regression is now
+   pinned structurally — the invariant that makes the bug impossible, asserted on the
+   DOM — rather than by replaying taps. Closing item 4 above properly means running
+   the pages in a real browser; a headless runner would close it permanently, and it
+   is the one addition to this repository that would cost more than it saves in
+   effort.
 
 ---
 
@@ -431,3 +444,266 @@ of bug and is not the same as looking at the thing.
 | `17d73b7` | F2 seeded RNG |
 | `7c74673` | F3 canvas + HUD |
 | `e728cf7` | F4 ad abstraction |
+| `51e15d0` | plan rewritten for the roulette engine |
+| `ef067cb` | F5 typed i18n |
+| `06c2897` | F6 roulette core |
+| `cdd2660` | F7 wheel renderer |
+| `04fc277` | F8 betting board + reducer |
+| `60057fb` | F9 aads.com unit |
+| `2cee066` | F10 strategy engine + simulator |
+| `f8a4f81` | F11 encyclopedia |
+| `272a294` | F12 design system |
+| `ecd5e11` | F13 CI + issue templates |
+| `7392881` | README rewrite + PLAN reconciliation |
+| `cef8679` | live site documented |
+| `4a09fef` | repository renamed |
+| `3620a0e` | boot failure surface |
+| `6138b66` | brand renamed to Roulette Lab |
+| `a3d6b80` | negative-radius arc fix |
+| `ceb242c` | board overlay no longer covers the numbers |
+
+---
+
+## 9. The Analysis Programme (G1–G8)
+
+### 9.0 What this programme is, and the rule that governs it
+
+The site shipped in F13 as a roulette engine that plays honestly. What it does not
+yet do is the thing people actually come here for: tell them what the numbers look
+like, and tell them what that look is worth.
+
+There is a market for exactly this, and it is largely dishonest. Any number of
+sites sell roulette systems, "wheel tracking" software and pattern subscriptions
+behind a paywall, and almost none of them publish a result that would discourage a
+purchase. The business this site is taking — and the ad unit in the footer is how
+it pays for the bandwidth — is to be the free alternative that does the work those
+sites charge for, and **then publishes the answer next to the question**.
+
+That gives this programme one non-negotiable rule, which extends rule 4 of §1:
+
+> **Every detector, system and tool this site offers ships with its measured rate
+> beside the rate a fair wheel predicts.** A pattern tracker that reports "63 % hit
+> rate" without also reporting that a fair wheel gives 50 % is not a tool, it is a
+> sales page. The site's whole claim is that the arithmetic is honest, and one
+> unpaired number contradicts that claim more loudly than any amount of copy
+> defending it.
+
+Two consequences shape every phase below:
+
+- **No tool may ship that reports only the flattering half.** "Last five were red,
+  so bet red" is a two-line detector; shipping it without its 300 000-spin
+  measurement of −2.70 % per spin would make this site the thing it displaces.
+- **Every claim about the wheel is a claim about randomness, and randomness has a
+  standard.** So each detector needs a comparison, the comparison needs a p-value
+  or a standard error, and a number without one is not published.
+
+### 9.1 A fourth page
+
+The three existing pages ship what a *player* needs. What an *analyst* needs is
+denser, and a scrolling table page with a wheel on it is the wrong shape for it.
+G1 adds `analysis.html` as a fourth entry in `vite.config.ts`'s
+`rollupOptions.input`, built from the same `src/ui/shell.ts` chrome, with the ad
+slot mounted last like every other page. G2–G7 all land on it. G8 links every tool
+on it to the encyclopedia article explaining its arithmetic, because a number with
+no explanation beside it is trivia.
+
+### 9.2 G1 — live history, and a type hierarchy with an entry point
+
+**What already exists.** `src/roulette/history.ts` is complete and tested: a
+100-entry newest-first buffer, `statsFor`, and a leading-colour run that stops at a
+zero. **Nothing paints it.** An engine that computes a history no visitor can see
+is the most expensive kind of dead code there is, and this is the single largest
+gap between what the site has and what a visitor is looking for.
+
+- `src/ui/history.ts` — the last N outcomes as a strip of cells, newest leftmost,
+  coloured from `colourOf`. Each cell carries an accessible name, because a
+  colour-only strip is unreadable to a colourblind visitor and to a screen reader.
+- `src/ui/stats.ts` — the hot and cold extremes and the current colour run, from
+  `statsFor`, labelled as observations and never as signals.
+- History must survive a reload: `parseHistory` / `serializeHistory` exist for
+  exactly this and this is their first consumer.
+- Tests: newest-first ordering; the strip's length is the capped history length and
+  not the raw spin count; a pushed outcome prepends and evicts the oldest;
+  `parseHistory` of corrupt storage yields an empty history rather than throwing.
+
+**Typography, audited.** The scale today is five steps from `1rem` to `2.5rem` on
+one sans stack at `--measure: 60ch`. That is legible and flat: there is no entry
+point, so a first-time visitor has no idea what the site is before they scroll. G1
+adds a display face for headings and figures only — body copy stays on the current
+stack, because a second body face costs legibility at 320 px and buys nothing —
+raises the largest step well past `--step-4` for the page hero, and gives every
+page a one-sentence `h1` saying what the page measures. Two rules govern the audit:
+**a number is always set in the tabular figures already declared and never in a
+proportional face**, and no heading may share its size with body copy, because a
+hierarchy whose largest and smallest differ by 2.5× is not a hierarchy.
+
+### 9.3 G2 — chi-square, p-value and z-score: the proof, live
+
+This is the centre of the programme. It is the only tool that answers the question
+every roulette player secretly has — *is this wheel rigged?* — and it answers with a
+number and a confidence level.
+
+- `src/stats/hypothesis.ts`, pure, no DOM:
+  - `chiSquareUniform(counts)` → `{ chi2, df, pValue }`, the p-value coming from
+    the chi-square survival function `Q(df/2, chi2/2)` over the regularised lower
+    incomplete gamma function.
+  - **No new dependency.** The budget is 120 kB gzipped and a statistics library is
+    ~30 kB of someone else's opinions about edge cases this site does not have.
+    The gamma series and its continued fraction are two dozen lines.
+  - `pocketZScores(counts, wheel)` → per pocket `{ expected, observed, sd, z }`,
+    where `sd = sqrt(n · p · (1 − p))` for a multinomial pocket.
+  - `verdict(pValue)` → the sentence a visitor reads, and it is allowed to say "the
+    wheel is indistinguishable from uniform", because that is the true answer
+    almost every time.
+- **The one assertion in this programme that comes from outside the code.** Chi-square
+  critical values are published tables, not derivations, so `test/stats.test.ts`
+  asserts our survival function against those tables: `chi2 = 50.998` at
+  `df = 36, p = 0.05`, plus the 0.01 and 0.10 rows. That is the legitimate exception
+  to "derive, then assert" — the test compares our implementation against an
+  external authority rather than against itself. Everything else in this phase is
+  derived.
+- Tests: a perfectly uniform synthetic history returns `pValue ≈ 1`; a history of
+  300 identical pockets returns a `pValue` indistinguishable from 0 and names that
+  pocket as the largest |z|; `Σ z ≈ 0` and `mean(z) ≈ 0` across all pockets; the
+  gamma agrees with the published tables at all three rows; and a history too short
+  to test is **refused rather than reported**, because a chi-square over 37 spins
+  proves nothing and printing one anyway would be the exact sin this programme
+  exists to avoid.
+
+### 9.4 G3 — Markov matrices and the detectors the paid sites sell
+
+- `src/stats/markov.ts` — the observed transition matrix over colour at order 1,
+  and over a caller-chosen classification at higher orders, with the
+  independence-expected matrix beside it and a per-cell excess. **Running it on real
+  spins returns to uniform, and that is the point:** a 37 × 37 first-order matrix is
+  the strongest structure detector that exists, and it comes back empty for exactly
+  the reason the algebra predicts.
+- `src/stats/detectors.ts` — the detectors people actually buy, each a pure function
+  `(entries) => { wins, total, rate, expected, delta, z }`:
+  - repeat (the current outcome equals the previous one)
+  - alternating (it differs)
+  - colour continuation after a run of length k
+  - "hot" continuation (previous pocket in the top frequency decile)
+  - "cold" continuation (previous pocket in the bottom decile)
+  - pairs and streets drawn from the last k outcomes
+- Every detector's `expected` is computed from the wheel, never typed in. A detector
+  with a hardcoded expectation is precisely the failure this programme replaces.
+- Tests: for each detector, a seeded fair-wheel history of 300 000 spins gives a
+  `rate` within 3 standard errors of its own `expected`, and `delta` within the same
+  band; a crafted alternating history is detected by `alternating` and by no other
+  detector; and each `expected` equals the analytic value for the wheel it was given
+  — including the fact that a repeat rate of 1/37 on the European wheel and 1/38 on
+  the American one are **not** the same number.
+
+### 9.5 G4 — heatmaps
+
+- `src/ui/heatmap.ts` — three grids (by number, by column, by dozen) over two
+  windows (all history, last 100), drawn on canvas with the same no-dependency
+  discipline as `src/sim/charts.ts`.
+- **Colour encodes deviation from expected, never raw count.** A raw-count heatmap
+  always puts its maximum on noise, which is the exact illusion every paid tool
+  sells. The legend therefore reads in z-scores, and the neutral token sits at
+  z = 0.
+- Tests: z = 0 maps to the neutral token and the scale is symmetric about it; a
+  uniform history produces no cell past the ±1σ band; a deliberately biased history
+  puts its maximum on the injected pocket; and the cell a pocket maps to is derived
+  from the pocket value rather than its index in a sorted list — a sorted mapping is
+  how a heatmap ends up disagreeing with the wheel it describes.
+
+### 9.6 G5 — bankroll mathematics: Kelly, ruin, Monte Carlo
+
+- `src/stats/kelly.ts` — `kellyFraction(edge)` for even money and the general form
+  for any payout, plus **fractional Kelly**, because full Kelly is a result and not
+  advice: it maximises long-run growth and simultaneously maximises the chance of
+  an unrecoverable ruin. The tool reports full Kelly and a quarter-Kelly figure with
+  the arithmetic that connects them, and it refuses a positive fraction on a
+  negative edge.
+- Ruin probability stays measured rather than closed-form, because the betting
+  systems have no closed form. Where theory *does* apply — the flat system on the
+  fair wheel — the page runs the simulator and the analytic answer side by side.
+  That comparison is worth more than any number either side produces alone, because
+  it is the cross-check that proves the simulator itself is honest.
+- Tests: Kelly on a negative edge is non-positive and refused; for even money at an
+  edge of 0.027 the full-Kelly fraction equals `0.027 / 1` (derived, not typed);
+  quarter Kelly is a quarter of it; the simulator's ruin frequency on the fair wheel
+  agrees with `1 / bankroll` within 3 standard errors; and the same request with the
+  same seed reproduces the same ruin spin exactly.
+
+### 9.7 G6 — real roulette biases, with the arithmetic attached
+
+- `src/content/biases.ts` — what a serious player knows and this site has not yet
+  said: pocket geometry on the European wheel is irregular, which is why no two
+  adjacent bets are equal and why "the neighbours of zero" is a claim about physical
+  layout rather than about numbers; the wheel runs at least three turns so no ball
+  can visibly reverse; run-out and tilt; the American double-ball rule; and the
+  0/00 asymmetry that `zeroPockets('american')` already measures.
+- **Each bias ships with what it is worth.** Every entry states whether the effect is
+  large enough to overcome a 2.70 % or 5.26 % edge, and almost none of them are. A
+  bias of 0.1 % against a 5.26 % edge is not an edge, and publishing it without
+  that number attached is how a free site becomes the paid one.
+- A wheel viewer that shades each sector by measured frequency or z-score, so the
+  deviation is visible on the wheel itself rather than only in a table. It reuses the
+  existing renderer with a different fill per sector, so no second canvas
+  implementation is written.
+
+### 9.8 G7 — head-to-head, and refusing to rank on one run
+
+- The simulator already runs eight systems in a Worker. G7 makes them comparable
+  and, more importantly, refuses to lie about the comparison: one run either ruined
+  the bankroll or it did not, so a leaderboard over a single seed is a coin flip
+  presented as a result.
+- So the tool runs N seeds per system and reports mean, spread and survival
+  frequency, with the ranking toggleable by metric — final bankroll, survival
+  probability, max drawdown, return per spin. Two systems whose rankings disagree
+  across metrics are shown as **tied**, because they are.
+- Tests: the same seed reproduces the same ranking exactly; changing the metric is
+  the only thing that reorders the table; and a tie is reported as a tie rather than
+  broken by insertion order.
+
+### 9.9 G8 — entry point, attraction, and the paths between tools
+
+- **A hero showing a live figure, not a slogan.** The first thing on the entry page
+  is a running measurement — the site's own most recent result, or the current house
+  edge of the selected wheel — updating as the page is watched. A visitor should
+  know what the site does before scrolling, and a number that moves does it faster
+  than a heading.
+- **A first-run path.** An ordered list of the tools in the order a first-time
+  visitor should meet them, each with one sentence on what question it answers.
+  This is the site's substitute for the sales funnel the paid sites use, and it is
+  a list of links rather than a pitch.
+- **Keyboard shortcuts with a discoverable list.** `?` opens it. A site that feels
+  like an instrument is more likely to be kept open than one that feels like a page,
+  and a shortcut nobody can discover is decoration.
+- **Every tool links to the encyclopedia article explaining its arithmetic, and
+  every article links back to the tool that produces the number.** A number with no
+  explanation is trivia; a tool with no explanation is a rumour.
+- Search surface: `analysis.html` gets a real title and description, joins the nav on
+  every page, and its sections are individually linkable with `scroll-margin-top` so
+  a deep link never lands under the header.
+
+### 9.10 Cost, budget, and what this programme refuses
+
+Each phase adds real code to a site currently at roughly 34 kB gzipped against a
+120 kB budget. The estimates that matter:
+
+| Phase | Adds | Note |
+|---|---|---|
+| G1 | ~6 kB gz | history strip, stats readout, type scale |
+| G2 | ~5 kB gz | the incomplete gamma is the bulk; a stats library would be ~30 kB |
+| G3 | ~7 kB gz | many small detectors; the matrix is the expensive part |
+| G4 | ~4 kB gz | canvas, no dependency |
+| G5 | ~3 kB gz | Kelly is arithmetic; ruin reuses the existing engine |
+| G6 | ~4 kB gz | mostly content, which is text |
+| G7 | ~4 kB gz | reuses the Worker |
+| G8 | ~5 kB gz | chrome, hero, shortcuts |
+
+Roughly 38 kB of headroom, landing near 72 kB gzipped — inside the budget, with the
+margin spent rather than hoarded. That is the correct order of preference: an honest
+site that reaches its budget argument is more defensible than a cheap site that hides
+its claims. **If a phase would cross the budget, the budget moves and the reason is
+written into this plan** — the alternative is shipping less measurement, which is the
+one thing this programme exists to provide.
+
+This programme does not add: predictions, a lucky-number feature, any word or symbol
+suggesting luck, any paid tier, any account, any tracking of the visitor, or any
+statistic presented without the comparison that makes it mean something.
