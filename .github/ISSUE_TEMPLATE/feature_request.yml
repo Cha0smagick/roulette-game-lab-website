@@ -1,0 +1,51 @@
+name: Feature request
+description: Something the site should be able to do
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read the project's README first — a lot of proposals have already been
+        made and declined for reasons that are worth honouring rather than
+        rediscovering.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can a visitor not do today that they should be able to do? Lead with the problem, not the solution — it is easier to solve the right problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would build
+    validations:
+      required: true
+
+  - type: textarea
+    id: size
+    attributes:
+      label: What it costs
+      description: Roughly how much bundle weight. The site has a hard gzipped budget and about four times headroom left; a feature that would consume most of it is worth arguing about explicitly rather than discovering afterwards.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Before you submit
+      options:
+        - label: |-
+            This is not real-money gambling, and the proposal does not add deposits, withdrawals, wallets, crypto, or any cash-out or bonus-withdrawal mechanic.
+          required: true
+        - label: |-
+            This does not add a mechanic whose design purpose is to make a player unable to stop — no fake timers, no fake scarcity, no near-misses dressed up as wins, no tracking of a player's state or habits.
+          required: true
+        - label: |-
+            The odds stay published and stay honest. No change that makes a bet pay worse without saying so on the page.
+          required: true
+        - label: |-
+            No ad interaction grants, increments or animates anything.
+          required: true

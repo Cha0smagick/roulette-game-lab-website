@@ -1,0 +1,66 @@
+name: Deploy
+
+# One push deploys. Everything else is a gate on top of that.
+#
+# The gate order matters and is deliberate:
+#   1. typecheck + tests + build   -> nothing ships that does not pass `npm run verify`
+#   2. size budget                 -> a bundle that grows silently is a bundle that
+#                                     grows until a phone on 3G abandons the page,
+#                                     and abandonment is the only number that matters here
+#   3. deploy                      -> so the site on gh-pages is always the last green commit
+#
+# `concurrency` exists because two pushes a minute apart would otherwise deploy
+# out of order and leave the published site on the older commit forever.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # npm ci, not npm install: it installs exactly the lockfile and fails if the
+      # lockfile and package.json disagree, which is the state that silently
+      # produces a build nobody can reproduce.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify (typecheck, tests, build)
+        run: npm run verify
+
+      - name: Enforce the size budget
+        run: node scripts/size-budget.mjs
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

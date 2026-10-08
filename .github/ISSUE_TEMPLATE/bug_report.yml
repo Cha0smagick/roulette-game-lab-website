@@ -1,0 +1,76 @@
+name: Bug report
+description: Something on the site behaves differently from how it is documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing this. The most useful reports are the ones that say what
+        you did, what you expected, and what happened instead — in that order.
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: Which page
+      options:
+        - Live table (index.html)
+        - Simulator (simulator.html)
+        - Encyclopedia (encyclopedia.html)
+        - All of them
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: viewport
+    attributes:
+      label: Screen size
+      description: Layout problems are almost always viewport-specific, and this is the one fact that cannot be recovered later.
+      options:
+        - 320 px (smallest phone still in use)
+        - 360-390 px (typical phone)
+        - 430 px (large phone)
+        - 768 px (tablet)
+        - 1280 px or wider (desktop)
+        - Landscape phone
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What you did
+      description: The taps and inputs, in order.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Include anything the browser printed to the console.
+    validations:
+      required: true
+
+  - type: input
+    id: seed
+    attributes:
+      label: Seed shown on the page
+      description: The table prints the seed it is running on so a session can be replayed. With it, a spin becomes reproducible instead of arguable.
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Right-click, Inspect, Console. Paste anything red.
+    validations:
+      required: false
