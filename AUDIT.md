@@ -83,16 +83,20 @@
 ## 4. ORDEN DE RESOLUCIÓN (guía atómica)
 
 1. **[hecho]** Escribir esta guía (`AUDIT.md`).
-2. **Branding (H1):** `footer.credit` en `src/i18n/locales/en.ts` + `es.ts` →
+2. **[hecho — 53896e8]** Branding (H1): `footer.credit` en `src/i18n/locales/en.ts` + `es.ts` →
    crédito + hipervínculo en `buildFooter()` (`src/ui/shell.ts`) → `.shell__credit`
    en `src/styles/` → test design-system → `npm run verify` → **commit**.
-3. **Markov (H2):** cablear `stateProbabilities`/`transitionMatrix` en el panel de
+3. **[hecho — ba2384d]** Markov (H2): cablear `stateProbabilities`/`transitionMatrix` en el panel de
    hipótesis (`src/ui/hypothesis-panel.ts`) → claves i18n → test → `npm run verify`
    → **commit**. Completa G3.
-4. **Autoplay (H3):** toggle en `main.ts` reutilizando `spin()` → claves i18n → test
+4. **[hecho]** Autoplay (H3): toggle en `main.ts` reutilizando `spin()` → claves i18n → test
    → `npm run verify` → **commit**.
-5. **Reset (H4):** botón reset en `main.ts` (acción existente) → clave i18n → test
-   → `npm run verify` → **commit**.
+5. **[hecho — 2ba4959]** Reset (H4): botón reset en `main.ts` (acción existente; termina
+   autoplay antes de resetear) → clave i18n → test → `npm run verify` → **commit**.
+5b. **[hecho]** Contador de visitas (petición nueva): módulo aislado `src/visits/counter.ts`
+   (servicio sin clave, degrada a nada si el servicio no responde) → párrafo en
+   `buildFooter()` compartido por las 4 páginas → claves i18n → CSS → test →
+   `npm run verify` → **commit**.
 6. **Cierre:** `npm run verify` completo → `git push` (el deploy de gh-pages publica
    los fixes y el branding queda visible en la web).
 7. **Diferido (externo/futuro):** sonidos, folclore en enciclopedia, visual QA en
