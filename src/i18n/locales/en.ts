@@ -31,6 +31,8 @@ export const en = {
   'table.clear': 'Clear bets',
   'table.undo': 'Undo',
   'table.rebet': 'Rebet',
+  'table.autoplay': 'Auto',
+  'table.autoplayStop': 'Stop',
   'table.balance': 'Balance',
   'table.wager': 'Total wager',
   'table.payout': 'Payout',

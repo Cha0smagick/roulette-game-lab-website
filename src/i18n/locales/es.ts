@@ -25,6 +25,8 @@ export const es: Record<TranslationKey, string> = {
   'table.clear': 'Limpiar apuestas',
   'table.undo': 'Deshacer',
   'table.rebet': 'Repetir',
+  'table.autoplay': 'Auto',
+  'table.autoplayStop': 'Parar',
   'table.balance': 'Saldo',
   'table.wager': 'Apuesta total',
   'table.payout': 'Pago',

@@ -28,11 +28,15 @@ import {
   reduce,
   type TableState,
 } from './game/table.js'
+import { nextAutoplayAction } from './game/autoplay.js'
 import { createRng, type Rng } from './util/rng.js'
 
 /** The three pages this site ships live in the shared shell. */
 
 const SEED_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
+/** Milliseconds between autoplay ticks: slower than a spin, faster than a reader waits. */
+const AUTOPLAY_TICK_MS = 400
 
 /** A short, human-readable seed so a session can be replayed from the console. */
 function newSeed(): string {
@@ -90,6 +94,8 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   let rng: Rng = createRng(seed)
   let spins = 0
   let history: History = loadHistory()
+  let autoplaying = false
+  let autoplayTimer: number | undefined
 
   const section = document.createElement('main')
   section.className = 'table'
@@ -143,6 +149,13 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   const rebetButton = buildButton('table.rebet', 'controls__small', () => {
     dispatch({ type: 'rebet' })
   })
+  const autoplayButton = buildButton('table.autoplay', 'controls__small', () => {
+    if (autoplaying) {
+      stopAutoplay()
+    } else {
+      startAutoplay()
+    }
+  })
   const seedRow = document.createElement('div')
   seedRow.className = 'hud__seed'
   const seedLabel = document.createElement('span')
@@ -162,7 +175,7 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   controls.append(chips.element, spinButton)
   const small = document.createElement('div')
   small.className = 'controls__row'
-  small.append(clearButton, undoButton, rebetButton)
+  small.append(clearButton, undoButton, rebetButton, autoplayButton)
   controls.append(small)
 
   section.append(board.element, controls, stats, result, seedRow)
@@ -203,6 +216,45 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
     strip.render(history)
   }
 
+  // The autoplay loop runs the pure decision once per tick and dispatches what
+  // it returns. It never stakes what the balance does not hold: the `stop`
+  // branch is the honest answer when the repeat would overdraw, exactly the
+  // rule the rebet reducer enforces.
+  function autoplayLabel(): void {
+    const key = autoplaying ? 'table.autoplayStop' : 'table.autoplay'
+    autoplayButton.setAttribute('data-i18n', key)
+    autoplayButton.textContent = t(key)
+    autoplayButton.setAttribute('aria-pressed', String(autoplaying))
+  }
+
+  function stopAutoplay(): void {
+    autoplaying = false
+    if (autoplayTimer !== undefined) {
+      window.clearInterval(autoplayTimer)
+      autoplayTimer = undefined
+    }
+    autoplayLabel()
+    render()
+  }
+
+  function startAutoplay(): void {
+    autoplaying = true
+    autoplayLabel()
+    autoplayTimer = window.setInterval(() => {
+      const action = nextAutoplayAction(state, wheel.isSpinning())
+      if (action === 'wait') return
+      if (action === 'stop') {
+        stopAutoplay()
+        return
+      }
+      if (action === 'rebet') {
+        dispatch({ type: 'rebet' })
+        return
+      }
+      spin()
+    }, AUTOPLAY_TICK_MS)
+  }
+
   function render(): void {
     const settled = state.lastSettlement
     balance.value.textContent = formatCurrency(state.balance)
@@ -221,6 +273,10 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
     undoButton.disabled = !canUndo
     clearButton.disabled = !canUndo
     rebetButton.disabled = state.lastBets.length === 0
+    // The loop can start whenever there is something to repeat or bets on the
+    // felt, and it stays clickable while a spin turns so the player can stop
+    // the next one before it starts.
+    autoplayButton.disabled = !hasBets(state) && state.lastBets.length === 0
     // Every state change passes through here, so this is the one place the gate
     // has to be consulted. It is cheap and one-way: after the unit is in the
     // document the call does nothing at all.
@@ -234,7 +290,7 @@ function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
   // gets closed.
   const idleSlot = createAdSlot({
     placement: 'idle',
-    isIdle: () => spins > 0 && !wheel.isSpinning() && !hasBets(state),
+    isIdle: () => spins > 0 && !wheel.isSpinning() && !hasBets(state) && !autoplaying,
   })
   section.append(idleSlot.element)
 
