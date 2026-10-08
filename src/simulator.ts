@@ -4,6 +4,7 @@ import { applyTranslations, formatCurrency, formatPercent, initI18n, t } from '.
 import type { TranslationKey } from './i18n/index.js'
 import { buildFooter, buildHeader } from './ui/shell.js'
 import { createAdSlot } from './ui/adslot.js'
+import { boot } from './ui/boot.js'
 import { VARIANT_IDS } from './roulette/wheels.js'
 import type { VariantId } from './roulette/wheels.js'
 import { STRATEGY_IDS, STRATEGY_LABEL } from './sim/strategies.js'
@@ -360,12 +361,8 @@ function mount(root: HTMLElement): void {
   paint()
 }
 
-function boot(): void {
+boot('app', (root) => {
   initI18n()
-  const root = document.getElementById('app')
-  if (root === null) throw new Error('missing #app mount point')
   mount(root)
   applyTranslations(root)
-}
-
-boot()
+})

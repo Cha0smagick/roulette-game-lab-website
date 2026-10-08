@@ -149,6 +149,37 @@ body {
   margin: 0;
   color: var(--muted);
   font-size: 0.95rem;
+  max-width: 46ch;
+}
+
+/*
+ * Failure state. A page that cannot start says so on screen instead of leaving
+ * the boot message up forever, which reads as a hung tab rather than a broken
+ * page. The detail block wraps rather than scrolls sideways: an error message
+ * that forces the page wider than the phone is its own second failure.
+ */
+.boot--failed {
+  justify-content: center;
+  gap: 1rem;
+}
+
+.boot--failed .boot__msg {
+  color: var(--ink-soft);
+}
+
+.boot__detail {
+  margin: 0;
+  max-width: min(100%, 60ch);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: rgb(248 113 113 / 8%);
+  color: var(--danger);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: start;
+  overflow-wrap: anywhere;
 }
 
 /* F1 shell. Mobile-first: single column, grows on wider screens. */

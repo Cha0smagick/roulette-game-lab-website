@@ -17,6 +17,7 @@ import type { WheelRenderer } from './ui/wheel.js'
 import { createBoard, type Board } from './ui/board.js'
 import { createChipPicker, type ChipPicker } from './ui/chips.js'
 import { createAdSlot } from './ui/adslot.js'
+import { boot } from './ui/boot.js'
 import {
   INITIAL_TABLE,
   hasBets,
@@ -232,16 +233,8 @@ function mount(root: HTMLElement): void {
   audit.reelazoWheel = table.wheel
 }
 
-function boot(): void {
+boot('app', (root) => {
   initI18n()
-  const root = document.getElementById('app')
-  if (root === null) {
-    // A blank page is the worst possible failure mode, so this is loud rather
-    // than silent: the boot markup in index.html would still be visible.
-    throw new Error('reelazo: #app is missing from the document')
-  }
   mount(root)
   applyTranslations(root)
-}
-
-boot()
+})

@@ -11,6 +11,7 @@ import { publishedTable, returnToPlayer, wheelHouseEdge } from './roulette/edge.
 import type { BetKind } from './roulette/bets.js'
 import { buildFooter, buildHeader } from './ui/shell.js'
 import { createAdSlot } from './ui/adslot.js'
+import { boot } from './ui/boot.js'
 
 /**
  * The encyclopedia.
@@ -197,12 +198,8 @@ function mount(root: HTMLElement): void {
   slot.mount()
 }
 
-function boot(): void {
+boot('app', (root) => {
   initI18n()
-  const root = document.getElementById('app')
-  if (root === null) throw new Error('Missing #app root element')
   mount(root)
   applyTranslations(root)
-}
-
-boot()
+})
