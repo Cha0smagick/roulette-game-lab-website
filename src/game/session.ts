@@ -11,9 +11,13 @@ import type { SessionAction } from '../game/reducer';
 import type { Bet } from '../game/types';
 import { createReelRenderer, type ReelRenderer } from '../ui/reel';
 import { createHud, renderHud } from '../ui/hud';
+import { createBreakOverlay, type BreakOverlay } from '../ui/break';
+import { createMockProvider } from '../ads/mock';
+import { isBreakDue, runBreak, spinsUntilBreak, DEFAULT_CADENCE } from '../ads/cadence';
+import type { AdProvider } from '../ads/provider';
 
-/** Spins between commercial breaks. Set by cadence.ts in F4. */
-let spinsPerBreak = 5;
+/** Spins between commercial breaks. Tuned by the cadence module, not here. */
+const spinsPerBreak = DEFAULT_CADENCE.spinsPerBreak;
 
 export interface Session {
   getState(): SessionState;
@@ -37,8 +41,10 @@ function newSeed(): string {
   return out;
 }
 
-export function mountSession(root: HTMLElement): Session {
+export function mountSession(root: HTMLElement, provider?: AdProvider): Session {
+  const ads: AdProvider = provider ?? createMockProvider();
   const hud = createHud(root);
+  const breakOverlay: BreakOverlay = createBreakOverlay(document.body);
 
   const canvas = document.createElement('canvas');
   canvas.className = 'reels';
@@ -61,12 +67,26 @@ export function mountSession(root: HTMLElement): Session {
   }
 
   function spinsToBreak(): number {
-    const used = state.spinIndex % spinsPerBreak;
-    return used === 0 ? spinsPerBreak : spinsPerBreak - used;
+    return spinsUntilBreak(state.spinIndex, spinsPerBreak);
   }
 
   function paint(): void {
     renderHud(hud, state, spinsToBreak());
+  }
+
+  /**
+   * Runs the commercial break, then credits the fuel it owed.
+   *
+   * The grant happens here, after runBreak resolves, and comes from the cadence
+   * module's constant. Nothing an ad reports, and nothing a click does, reaches
+   * this function. See src/ads/provider.ts for why that matters.
+   */
+  async function takeBreak(): Promise<void> {
+    const [energy] = await Promise.all([runBreak(ads), breakOverlay.run()]);
+    if (energy.energy > 0) {
+      dispatch({ type: 'grant-energy', amount: energy.energy });
+    }
+    paint();
   }
 
   function onSpin(): void {
@@ -78,9 +98,18 @@ export function mountSession(root: HTMLElement): Session {
     if (outcome !== null) {
       reels.spin(outcome.reels);
     }
+
+    // The break is due on the boundary. Scheduling it here rather than from a
+    // timer guarantees it never lands mid-animation or mid-bonus.
+    if (isBreakDue(state.spinIndex, spinsPerBreak) && !breakOverlay.isOpen()) {
+      void takeBreak();
+    }
   }
 
   hud.spinButton.addEventListener('click', onSpin);
+
+  // Loading never rejects, so this cannot reject either.
+  void ads.load();
 
   const onBet = (event: Event): void => {
     const target = event.target;
@@ -103,11 +132,4 @@ export function mountSession(root: HTMLElement): Session {
       reels.destroy();
     },
   };
-}
-
-/** Exposed so the F4 break scheduler can tune cadence without a new config file. */
-export function setSpinsPerBreak(spins: number): void {
-  if (Number.isInteger(spins) && spins > 0) {
-    spinsPerBreak = spins;
-  }
 }

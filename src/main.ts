@@ -1,5 +1,6 @@
 import './styles/base.css';
 import './styles/reel.css';
+import './styles/break.css';
 import { mountSession } from './game/session';
 
 /**

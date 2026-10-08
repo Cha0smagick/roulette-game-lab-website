@@ -1,0 +1,68 @@
+/* Commercial break overlay. */
+
+.break {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: calc(1.5rem + env(safe-area-inset-top, 0px)) 1rem
+    calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  /* Opaque. A break that lets the reels show through invites taps aimed at the
+     game instead of the ad. */
+  background: #05070f;
+}
+
+.break--open {
+  display: flex;
+}
+
+.break__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.break__badge {
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+/* The network's container. Isolated so network styles cannot reach the game,
+   and so nothing the network injects can float over the controls. */
+.break__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 220px;
+  border-radius: 10px;
+  background: var(--navy-light);
+  overflow: hidden;
+}
+
+.break__reward {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.break__countdown {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
