@@ -1,12 +1,87 @@
+/*
+ * The design system.
+ *
+ * One palette, declared once, used by the stylesheets AND by the canvas
+ * renderer. The wheel drew a brass rim from its own constant while the spin
+ * button painted its gradient from a CSS variable that was a different gold,
+ * so the two never quite matched on screen. test/design-system.test.ts reads
+ * these values out of this file and compares them against the renderer's
+ * palette, which is the only reason the two cannot drift apart again.
+ *
+ * The colours are a felt table at night: a near-black blue ground, brass for
+ * anything interactive, bone for anything read, and the two betting colours
+ * reserved exclusively for the betting board.
+ */
 :root {
-  /* Palette: navy ground, amber for fuel/energy, cyan for interaction. */
+  /* Surfaces */
   --navy: #0b1026;
   --navy-light: #131a3a;
-  --amber: #ffb03a;
-  --cyan: #35c4d9;
-  --white: #f5f7ff;
+  --felt: #0e5c3f;
+
+  /* Brass is the single accent. Interactive, current, emphasised, nothing else. */
+  --brass: #c9a227;
+  --brass-dark: #6e5511;
+  /* Kept as an alias because a dozen rules were written before the accent was
+     named for what it is, and renaming them all in one pass would bury the
+     palette change in a diff nobody could review. */
+  --amber: var(--brass);
+
+  /* Ink */
+  --bone: #f5f2e8;
   --muted: #8a93b8;
+  --white: var(--bone);
+
+  /* Interaction and status. Cyan is for numbers the eye should follow. */
+  --cyan: #35c4d9;
   --danger: #f87171;
+  --success: #4ade80;
+
+  /* Betting colours. These two are the felt's, not the interface's: using them
+     for anything else is how a player learns to stop reading them. */
+  --red: #9b1b30;
+  --black: #15151a;
+  --black-light: #1c1c22;
+  --green: #0b5d3b;
+  --felt-dark: #08402c;
+  --navy-mid: #10162f;
+
+  /*
+   * Brass has three more steps. A single accent used for a background, a
+   * shadow, a border and a hover state ends up being four accidental colours
+   * once someone reaches for a hex value, so the steps are named here.
+   */
+  --brass-light: #d8b23c;
+  --brass-shadow: #8a6f16;
+  --brass-deep: #241a05;
+
+  /* Reading grey, one step above muted, for body copy on a felt background. */
+  --ink-soft: #c8cbe0;
+
+  /*
+   * Scale. Everything sizes in rem or clamp() so a user who has raised the
+   * browser's base font size gets a layout that follows rather than a wall of
+   * 16px labels. A fixed px size anywhere would silently ignore that setting,
+   * which is the whole point of the setting.
+   */
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.5rem;
+  --step-3: 2rem;
+  --step-4: 2.5rem;
+
+  --gap-tight: 0.35rem;
+  --gap: 0.75rem;
+  --gap-loose: 1.25rem;
+
+  /*
+   * 44px is the smallest reliably tappable target on a phone, and every
+   * interactive element in this project is at least that tall. It is a token so
+   * that the rule is checkable rather than aspirational.
+   */
+  --touch-target: 44px;
+
+  --radius: 10px;
+  --measure: 60ch;
 
   /* Respect the user's OS setting instead of assuming dark. */
   color-scheme: dark;

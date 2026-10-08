@@ -83,12 +83,18 @@ export function labelRotation(absoluteAngle: number): number {
 }
 
 /** Palette. Consolidated here so the wheel and the board cannot drift apart. */
-const RED_FILL = '#9b1b30'
-const BLACK_FILL = '#15151a'
-const GREEN_FILL = '#0b5d3b'
-const BRASS = '#c9a227'
-const BRASS_DARK = '#6e5511'
-const BONE = '#f5f2e8'
+/**
+ * The wheel's palette, exported so test/design-system.test.ts can prove these
+ * equal the custom properties in base.css. Canvas cannot read a CSS variable,
+ * so the duplication is unavoidable in principle; the test is what makes it
+ * harmless in practice. Changing one without the other is a failing build.
+ */
+export const RED_FILL = '#9b1b30'
+export const BLACK_FILL = '#15151a'
+export const GREEN_FILL = '#0b5d3b'
+export const BRASS = '#c9a227'
+export const BRASS_DARK = '#6e5511'
+export const BONE = '#f5f2e8'
 
 const SPIN_BASE_MS = 2600
 const SPIN_MAX_MS = 5200

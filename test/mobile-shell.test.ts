@@ -26,6 +26,9 @@ describe('index.html mobile contract', () => {
 
   it('ships boot markup outside the bundle so a failed load is never a blank page', () => {
     expect(html).toContain('id="app"');
-    expect(html).toContain('Cargando');
+    // English, not Spanish: the product language was set to English in F5, and the
+// boot text renders before the bundle can translate anything, so it has to be
+// written in the language the product ships in.
+expect(html).toContain('Loading');
   });
 });

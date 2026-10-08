@@ -216,7 +216,17 @@ function mount(root: HTMLElement): void {
   section.append(heading, grid, strategyGroup, bulkRow, run, status)
   section.append(equityCaption, equityCanvas)
   section.append(barCaption, barCanvas)
-  section.append(table, note)
+  // The results grid is six numeric columns with nowrap cells, because a number
+  // broken across two lines reads as two numbers. Six columns do not fit a 320px
+  // screen, so the table scrolls inside its own box rather than widening the
+  // page: a sideways-scrolling page on a phone hides the spin control and reads
+  // as broken, while a sideways-scrolling table reads as a table with more.
+  const tableWrap = document.createElement('div')
+  tableWrap.className = 'sim__tablewrap'
+  tableWrap.setAttribute('data-i18n-attr', 'aria-label:sim.results')
+  tableWrap.append(table)
+
+  section.append(tableWrap, note)
 
   const slot = createAdSlot()
   root.className = 'shell'

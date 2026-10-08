@@ -133,8 +133,8 @@
   width: 100%;
   border: 0;
   border-radius: 10px;
-  background: linear-gradient(180deg, #d8b23c, var(--amber));
-  color: #241a05;
+  background: linear-gradient(180deg, var(--brass-light), var(--amber));
+  color: var(--brass-deep);
   font: inherit;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -176,6 +176,14 @@
   touch-action: manipulation;
 }
 
+.sim__tablewrap {
+  /* The scroll box for the results grid. `-webkit-overflow-scrolling: touch`
+     is what makes the momentum feel native on iOS rather than stuttery. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
 .sim__table {
   width: 100%;
   border-collapse: collapse;
@@ -208,11 +216,11 @@
 }
 
 .sim__negative {
-  color: #f87171;
+  color: var(--danger);
 }
 
 .sim__positive {
-  color: #4ade80;
+  color: var(--success);
 }
 
 @media (min-width: 720px) {

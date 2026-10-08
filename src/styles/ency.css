@@ -19,18 +19,18 @@
   font-size: clamp(1.6rem, 7vw, 2.4rem);
   letter-spacing: 0.02em;
   margin: 12px 0 8px;
-  color: #f5f2e8;
+  color: var(--bone);
 }
 
 .ency__intro,
 .ency__summary {
-  color: #c8cbe0;
+  color: var(--ink-soft);
   line-height: 1.6;
   margin: 0 0 12px;
 }
 
 .ency__intro {
-  border-inline-start: 3px solid #c9a227;
+  border-inline-start: 3px solid var(--brass);
   padding-inline-start: 12px;
   font-size: 1rem;
 }
@@ -55,14 +55,14 @@
   padding: 6px 12px;
   border: 1px solid rgb(201 162 39 / 35%);
   border-radius: 10px;
-  color: #f5f2e8;
+  color: var(--bone);
   text-decoration: none;
   font-size: 0.94rem;
 }
 
 .ency__contents a:hover,
 .ency__contents a:focus-visible {
-  border-color: #c9a227;
+  border-color: var(--brass);
   background: rgb(201 162 39 / 10%);
 }
 
@@ -80,18 +80,18 @@
 .ency__title {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(1.2rem, 5vw, 1.5rem);
-  color: #c9a227;
+  color: var(--brass);
   margin: 0 0 8px;
 }
 
 .ency__article p {
   line-height: 1.65;
-  color: #c8cbe0;
+  color: var(--ink-soft);
   margin: 0 0 12px;
 }
 
 .ency__summary {
-  color: #f5f2e8;
+  color: var(--bone);
 }
 
 /*
@@ -108,7 +108,7 @@
 
 .ency__table caption {
   text-align: start;
-  color: #8a93b8;
+  color: var(--muted);
   font-size: 0.85em;
   padding-bottom: 8px;
 }
@@ -121,7 +121,7 @@
 
 .ency__table th {
   background: rgb(245 242 232 / 8%);
-  color: #f5f2e8;
+  color: var(--bone);
   font-weight: 600;
   text-align: start;
 }
@@ -132,7 +132,7 @@
 
 .ency__number {
   text-align: end;
-  color: #35c4d9;
+  color: var(--cyan);
 }
 
 /*

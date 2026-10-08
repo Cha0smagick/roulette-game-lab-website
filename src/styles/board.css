@@ -15,10 +15,10 @@
  */
 
 .board {
-  --board-felt: #0e5c3f;
-  --board-felt-dark: #08402c;
-  --board-brass: #c9a227;
-  --board-bone: #f5f2e8;
+  --board-felt: var(--felt);
+  --board-felt-dark: var(--felt-dark);
+  --board-brass: var(--brass);
+  --board-bone: var(--bone);
   --cell: minmax(0, 1fr);
   display: flex;
   flex-direction: column;
@@ -42,7 +42,7 @@
   padding: 8px 4px;
   border: 1px solid rgb(201 162 39 / 45%);
   border-radius: 6px;
-  background: #0b1026;
+  background: var(--navy);
   color: var(--board-bone);
   font: 600 12px/1.2 'Helvetica Neue', Helvetica, Arial, sans-serif;
   touch-action: manipulation;
@@ -51,7 +51,7 @@
 .board__layer[aria-pressed='true'] {
   background: var(--board-brass);
   border-color: var(--board-brass);
-  color: #0b1026;
+  color: var(--navy);
 }
 
 .board__layer:disabled {
@@ -82,7 +82,7 @@
   padding: 0;
   border: 0;
   border-radius: 3px;
-  background: #15151a;
+  background: var(--black);
   color: var(--board-bone);
   font: 600 clamp(11px, 3.4vw, 15px) / 1 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-variant-numeric: tabular-nums;
@@ -90,11 +90,11 @@
 }
 
 .board__number[data-colour='red'] {
-  background: #9b1b30;
+  background: var(--red);
 }
 
 .board__number[data-colour='green'] {
-  background: #0b5d3b;
+  background: var(--green);
 }
 
 /* A zero is 2 numbers in one cell on the no-zero-excluded tables and the
@@ -190,18 +190,18 @@
   padding: 6px 2px;
   border: 1px solid rgb(201 162 39 / 40%);
   border-radius: 6px;
-  background: #15151a;
+  background: var(--black);
   color: var(--board-bone);
   font: 600 clamp(10px, 2.8vw, 13px) / 1.15 'Helvetica Neue', Helvetica, Arial, sans-serif;
   touch-action: manipulation;
 }
 
 .board__outside-bet[data-colour='red'] {
-  background: #9b1b30;
+  background: var(--red);
 }
 
 .board__outside-bet[data-colour='black'] {
-  background: #1c1c22;
+  background: var(--black-light);
 }
 
 .board__outside-bet--staked {
