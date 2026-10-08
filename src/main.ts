@@ -1,4 +1,5 @@
 import './styles/base.css'
+import './styles/wheel.css'
 import {
   applyTranslations,
   createLocalePicker,
@@ -6,6 +7,9 @@ import {
   t,
 } from './i18n/index.js'
 import type { TranslationKey } from './i18n/index.js'
+import { EUROPEAN } from './roulette/wheels.js'
+import { createWheelRenderer } from './ui/wheel.js'
+import type { WheelRenderer } from './ui/wheel.js'
 
 /** The three pages this site ships. Rendered into the shared header. */
 const PAGES = [
@@ -72,14 +76,35 @@ function buildFooter(): HTMLElement {
   return footer
 }
 
+/**
+ * The live table. The wheel is a pure view: it is told which pocket to land on
+ * and reports back only whether a spin is still in flight. It never picks a
+ * number itself -- `pickPocket` in roulette/wheels owns every draw, so the
+ * renderer cannot become a second, disagreeing source of randomness.
+ */
+function buildTable(): { section: HTMLElement; wheel: WheelRenderer } {
+  const section = document.createElement('main')
+  section.className = 'table'
+
+  const canvas = document.createElement('canvas')
+  canvas.className = 'wheel'
+  canvas.setAttribute('role', 'img')
+  canvas.setAttribute('aria-label', t('table.wheel'))
+  section.append(canvas)
+
+  return { section, wheel: createWheelRenderer(canvas, EUROPEAN) }
+}
+
 function mount(root: HTMLElement): void {
+  const table = buildTable()
   root.className = 'shell'
-  root.replaceChildren(
-    buildHeader(),
-    document.createElement('main'),
-    buildAdSlot(),
-    buildFooter(),
-  )
+  root.replaceChildren(buildHeader(), table.section, buildAdSlot(), buildFooter())
+
+  // Exposed on the root purely so the browser console can audit a landed number
+  // against the seed instead of trusting the pixels. F8 replaces this with the
+  // real spin pipeline, which owns the draw.
+  const audit = root as HTMLElement & { reelazoWheel?: WheelRenderer }
+  audit.reelazoWheel = table.wheel
 }
 
 function boot(): void {

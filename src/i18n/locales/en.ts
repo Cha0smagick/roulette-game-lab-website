@@ -47,6 +47,7 @@ export const en = {
   'table.resultWin': 'Win {amount}',
   'table.resultLoss': 'No win',
   'table.resultPush': 'Push',
+  'table.wheel': 'Roulette wheel',
 
   // ---- Chips --------------------------------------------------------------
   'chip.select': 'Chip',

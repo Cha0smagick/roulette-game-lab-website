@@ -41,6 +41,7 @@ export const es: Record<TranslationKey, string> = {
   'table.resultWin': 'Ganaste {amount}',
   'table.resultLoss': 'Sin premio',
   'table.resultPush': 'Empate',
+  'table.wheel': 'Rueda de ruleta',
 
   'chip.select': 'Ficha',
   'chip.1': '1',

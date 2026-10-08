@@ -1,0 +1,29 @@
+/* The live wheel. Sized in CSS so the canvas never has to measure itself before
+   first paint, which would otherwise flash at the default 300x150 and then
+   resize, visibly jolting the layout on every phone load. */
+.table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+}
+
+.wheel {
+  display: block;
+  width: min(92vw, 420px, 52dvh);
+  height: auto;
+  aspect-ratio: 1;
+  /* The canvas has no tap targets, but it sits directly above the spin button
+     and a 300ms tap delay there reads as an unresponsive game. */
+  touch-action: manipulation;
+  /* A wheel is a sphere viewed from above, so a faint shadow under it is what
+     sells the depth more than any amount of shading on the rim. */
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 45%));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel {
+    filter: none;
+  }
+}
